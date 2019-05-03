@@ -50,3 +50,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+build/.vs
+build/Computer Network/x64
+build/x64
