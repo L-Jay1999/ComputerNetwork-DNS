@@ -54,3 +54,4 @@ dkms.conf
 build/.vs
 build/Computer Network/x64
 build/x64
+.vscode
