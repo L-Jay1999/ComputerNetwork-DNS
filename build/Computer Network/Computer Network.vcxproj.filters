@@ -18,6 +18,9 @@
     <ClCompile Include="..\..\src\main.cc">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\include\host_list.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\include\dns_packet.h">
@@ -32,5 +35,16 @@
     <ClInclude Include="..\..\src\include\my_socket.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\include\host_list.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\include\log.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\data\hosts.txt">
+      <Filter>资源文件</Filter>
+    </Text>
   </ItemGroup>
 </Project>

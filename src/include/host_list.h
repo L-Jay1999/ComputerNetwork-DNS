@@ -2,7 +2,6 @@
 
 #include <unordered_map>
 #include <string>
-#include <winsock2.h>
 
 enum HostState
 {
