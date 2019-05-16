@@ -19,7 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\include\dns_receiver.cc" />
+    <ClCompile Include="..\..\src\include\dns_sender.cc" />
     <ClCompile Include="..\..\src\include\host_list.cc" />
+    <ClCompile Include="..\..\src\include\test.cpp" />
     <ClCompile Include="..\..\src\main.cc" />
   </ItemGroup>
   <ItemGroup>
