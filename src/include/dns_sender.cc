@@ -7,6 +7,11 @@ DNSSender::DNSSender(std::deque <Queuedata>* jobq, std::mutex *mutex, std::strin
 	this->mutex = mutex;
 }
 
+void DNSSender::start()
+{
+
+}
+
 void DNSSender::DNSParse()
 {
 	if (!jobq->empty())

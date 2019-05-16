@@ -8,6 +8,6 @@ private:
     static constexpr int recvbuflen = 512;
     char recvbuf[recvbuflen];
     sockaddr from;
-    int from_len;
+    int from_len = sizeof(sockaddr);
     // ......
 };
