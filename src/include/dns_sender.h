@@ -4,28 +4,32 @@
 #include <mutex>
 #include <map>
 #include <WinSock2.h>
+#pragma comment(lib, "Ws2_32.lib")
+
 #include "my_socket.h"
 #include "dns_packet.h"
 #include "host_list.h"
+
+class MyQueue;
 class DNSSender
 {
 public:
-	DNSSender(std::deque <Queuedata>* jobq, std::mutex *mutex, std::string address = "10.3.9.5");
-	void start();
+	DNSSender(const std::string &address = "10.3.9.5");
+
+	void Start();
+	void set_packet();
+	// 供job_queue分配
+	void set_queue(MyQueue *queue);
+	// 响应
+	void Responce();
+
 private:
-    std::deque <Queuedata> *jobq; // 从该队列中取出数据并处理发送
-	std::mutex *mutex;//锁
+	MyQueue *jobq; // 从该队列中取出数据并处理发送
 	HostList *host_list_;
 
-	MySocket socSend;
-	MySocket socQuery;			  // 向上级查询时使用
-	std::string address;             // 上级dns服务器地址
-	DNSPacket dns_packet;
-	std::map <unsigned short, sockaddr> id_ip_;
-
-	void DNSParse();
-	void sendback(sockaddr addr);
-	void sendback(sockaddr addr, std::string answer);
-	unsigned short combine(unsigned char hbyte, unsigned char lbyte);
-    // .......
+	MySocket socSend;	 // 发回给用户
+	MySocket socQuery;   // 向上级查询时使用
+	std::string address; // 上级dns服务器地址
+	DNSPacket dns_packet_;
+	std::map<unsigned short, sockaddr> id_ip_;
 };
