@@ -64,6 +64,11 @@ void DNSSender::DNSParse()
 
 			//调试信息
 
+			if (dns_packet.query.QTYPE == 12)
+			{
+				//发回
+			}
+
 			auto temp = host_list_->find(dns_packet.query.QNAME);
 			if (temp == FIND)
 			{
@@ -95,6 +100,16 @@ void DNSSender::DNSParse()
 			
 		}
 	}
+}
+
+void DNSSender::sendback(sockaddr addr, std::string answer)
+{
+
+}
+
+void DNSSender::sendback(sockaddr addr)
+{
+
 }
 
 unsigned short DNSSender::combine(unsigned char hbyte, unsigned char lbyte)

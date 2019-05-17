@@ -24,6 +24,8 @@ private:
 	std::map <unsigned short, sockaddr> id_ip_;
 
 	void DNSParse();
+	void sendback(sockaddr addr);
+	void sendback(sockaddr addr, std::string answer);
 	unsigned short combine(unsigned char hbyte, unsigned char lbyte);
     // .......
 };
