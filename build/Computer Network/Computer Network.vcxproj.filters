@@ -21,6 +21,18 @@
     <ClCompile Include="..\..\src\include\host_list.cc">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\include\test.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\include\dns_sender.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\include\dns_receiver.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\include\my_socket.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\include\dns_packet.h">

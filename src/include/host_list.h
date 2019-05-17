@@ -13,14 +13,12 @@ enum HostState
 class HostList
 {
     public:
-        HostList();
+        HostList(std::string path = "../../data/hosts.txt");
 
-        HostState find(const std::string &host_name)
-        {
-
-        }
-
+		HostState find(const std::string& host_name);
+		std::string get(const std::string& host_name);
     private:
-        static const std::string host_path_;
-        std::unordered_map<std::string, unsigned> host_map_; // <host_name, ip_addr>
+        std::string host_path_;
+		static const std::string banned_host_;
+        std::unordered_map<std::string, std::string> host_map_; // <host_name, ip_addr>
 };
