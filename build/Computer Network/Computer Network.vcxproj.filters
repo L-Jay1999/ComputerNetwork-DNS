@@ -36,6 +36,9 @@
     <ClCompile Include="..\..\src\include\my_socket.cc">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\include\dns_packet.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\include\my_queue.h">
