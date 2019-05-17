@@ -18,16 +18,19 @@
     <ClCompile Include="..\..\src\main.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\include\host_list.cc">
+    <ClCompile Include="..\..\src\include\my_queue.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\include\test.cpp">
+    <ClCompile Include="..\..\src\include\dns_receiver.cc">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\include\dns_sender.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\include\dns_receiver.cc">
+    <ClCompile Include="..\..\src\include\host_list.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\include\job_queue.cc">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\include\my_socket.cc">
@@ -35,22 +38,28 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\include\dns_packet.h">
+    <ClInclude Include="..\..\src\include\my_queue.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\include\dns_receiver.h">
+    <ClInclude Include="..\..\src\include\log.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\include\dns_sender.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\include\my_socket.h">
+    <ClInclude Include="..\..\src\include\job_queue.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\include\host_list.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\include\log.h">
+    <ClInclude Include="..\..\src\include\dns_sender.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\include\dns_receiver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\include\dns_packet.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\include\my_socket.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
