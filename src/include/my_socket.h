@@ -1,9 +1,11 @@
 #pragma once
 #include <WinSock2.h>
+#pragma comment(lib, "Ws2_32.lib")
 class MySocket
 {
 public:
-	MySocket();
+    MySocket();
+
 private:
     static constexpr int recvbuflen = 512;
     char recvbuf[recvbuflen];

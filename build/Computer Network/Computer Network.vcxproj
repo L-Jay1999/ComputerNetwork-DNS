@@ -19,11 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\include\dns_packet.cc" />
     <ClCompile Include="..\..\src\include\dns_receiver.cc" />
     <ClCompile Include="..\..\src\include\dns_sender.cc" />
     <ClCompile Include="..\..\src\include\host_list.cc" />
+    <ClCompile Include="..\..\src\include\job_queue.cc" />
+    <ClCompile Include="..\..\src\include\my_queue.cc" />
     <ClCompile Include="..\..\src\include\my_socket.cc" />
-    <ClCompile Include="..\..\src\include\test.cpp" />
     <ClCompile Include="..\..\src\main.cc" />
   </ItemGroup>
   <ItemGroup>
@@ -31,7 +33,9 @@
     <ClInclude Include="..\..\src\include\dns_receiver.h" />
     <ClInclude Include="..\..\src\include\dns_sender.h" />
     <ClInclude Include="..\..\src\include\host_list.h" />
+    <ClInclude Include="..\..\src\include\job_queue.h" />
     <ClInclude Include="..\..\src\include\log.h" />
+    <ClInclude Include="..\..\src\include\my_queue.h" />
     <ClInclude Include="..\..\src\include\my_socket.h" />
   </ItemGroup>
   <ItemGroup>

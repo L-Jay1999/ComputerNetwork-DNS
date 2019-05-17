@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
+
 #include <WinSock2.h>
+#pragma comment(lib, "Ws2_32.lib")
 // DNSHeader
 // DNSQuery
 // DNSAnswer
@@ -12,7 +14,7 @@ struct DNSHeader
 	unsigned short Flags;
 	unsigned short QDCOUNT;
 	unsigned short ANCOUNT;
-	unsigned short NSCOUNT; 
+	unsigned short NSCOUNT;
 	unsigned short ARCOUNT;
 };
 
@@ -33,16 +35,19 @@ struct DNSAnswer
 	unsigned int RDATA;
 };
 
-struct DNSPacket
-{
-	DNSHeader header;
-	DNSQuery query;
-	DNSAnswer answer;
-};
-
-struct Queuedata
+struct QueueData
 {
 	int len;
 	char *data;
 	sockaddr addr;
+};
+
+struct DNSPacket
+{
+public:
+	bool Parse(const QueueData &raw_packet);
+	QueueData raw_data;
+	DNSHeader header;
+	DNSQuery query;
+	DNSAnswer answer;
 };
