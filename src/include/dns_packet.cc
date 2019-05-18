@@ -37,7 +37,17 @@ static unsigned short inttos(unsigned int& x)
 bool DNSPacket::Parse(const QueueData &raw_packet)
 {
 	raw_data = raw_packet;
-	char* packet = raw_packet.data;
+	char *packet = raw_packet.data;
+	
+	//char packet[256];
+	//strcpy_s(packet, raw_packet.data);
+	//std::string packet(raw_packet.data);
+	/*unsigned char* packet = new unsigned char[256]();
+	for (int i = 0; i < raw_packet.data.size(); i++)
+	{
+		packet[i] = raw_packet.data[i];
+	}*/
+
 	int packet_len = raw_packet.len;
 	sockaddr packet_addr = raw_packet.addr;
 
@@ -58,10 +68,7 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 		{
 			char_num = static_cast<unsigned char>(packet[p_question]);
 			p_question++;
-			if (char_num == 0)
-			{
-				break;
-			}
+			if (char_num == 0)break;
 			else
 			{
 				for (int i = 0; i < char_num; i++)
@@ -86,18 +93,15 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 		answer = new DNSAnswer[header.ANCOUNT];
 		for (int acnt = 0; acnt < header.ANCOUNT; acnt++)
 		{
-			if (packet[p_question] == 0xc0)
+			if ((unsigned char)packet[p_question] == 0xc0)
 			{
 				int p_question_temp = p_question;
-				p_question = (int)packet[p_question + 1];
+				p_question = (unsigned int)packet[p_question + 1];
 				while (true)
 				{
 					char_num = static_cast<unsigned char>(packet[p_question]);
 					p_question++;
-					if (char_num == 0)
-					{
-						break;
-					}
+					if (char_num == 0)break;
 					else
 					{
 						for (int i = 0; i < char_num; i++)
@@ -110,12 +114,12 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 				}
 				answer[acnt].NAME.pop_back();
 				p_question = p_question_temp;
+				p_question += 2;
 			}
 			else
 			{
 				std::cout << "warning" << std::endl;
 			}
-			p_question += 2;
 			answer[acnt].TYPE = ctos(packet[p_question], packet[p_question + 1]);
 			p_question += 2;
 			answer[acnt].CLASS = ctos(packet[p_question], packet[p_question + 1]);
@@ -123,6 +127,7 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 			answer[acnt].TTL = stoint(ctos(packet[p_question], packet[p_question + 1]), ctos(packet[p_question + 2], packet[p_question + 3]));
 			p_question += 4;
 			answer[acnt].RDLENGTH = ctos(packet[p_question], packet[p_question + 1]);
+			p_question += 2;
 			for (int i = 0; i < answer[acnt].RDLENGTH; i++)
 			{
 				//answer[acnt].RDATA[i] = stoint(ctos(packet[p_question], packet[p_question + 1]), ctos(packet[p_question + 2], packet[p_question + 3]));
@@ -136,7 +141,7 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 
 bool DNSPacket::Packet()
 {
-	memset(raw_data.data, '\0', sizeof(raw_data.data));
+	//memset(raw_data.data, '\0', sizeof(raw_data.data));
 	//raw_data.data.clear();
 	
 	//头
@@ -170,8 +175,12 @@ bool DNSPacket::Packet()
 
 	//问题
 	int p_question = 12;
+	unsigned short QTYPE;
+	unsigned short QCLASS;
 	for (int qcnt = 0; qcnt < QDCOUNT; qcnt++)
 	{
+		QTYPE = query[qcnt].QTYPE;
+		QCLASS = query[qcnt].QCLASS;
 		int temp, cnt = 0;
 		p_question++;
 		for (int i = 0; i < query[qcnt].QNAME.length(); i++)
@@ -188,10 +197,24 @@ bool DNSPacket::Packet()
 			}
 			p_question++;
 		}
+		raw_data.data[p_question - (cnt + 1)] = cnt;
 		raw_data.data[p_question] = 0;
+		p_question++;
+
+		//QTYPE
+		raw_data.data[p_question] = stoc(QTYPE);
+		p_question++;
+		raw_data.data[p_question] = static_cast<unsigned char>(QTYPE);
+		p_question++;
+
+		//QCLASS
+		raw_data.data[p_question] = stoc(QCLASS);
+		p_question++;
+		raw_data.data[p_question] = static_cast<unsigned char>(QCLASS);
 		p_question++;
 	}
 
+	//回答
 	if (isans)
 	{
 		unsigned short TYPE;
@@ -251,7 +274,7 @@ bool DNSPacket::Packet()
 		}
 	}
 	//raw_data.data[p_question] = '\0';
-	raw_data.len = strlen(raw_data.data);
+	raw_data.len = p_question;
 	//raw_data.len = raw_data.data.length();
 	return true;
 }
@@ -275,6 +298,7 @@ void DNSPacket::print()
 		printf("Query %d:\n", qcnt+1);
 		printf("QNAME = %s\n", query[qcnt].QNAME.c_str());
 		printf("QTYPE = %d, QCLASS = %d\n", query[qcnt].QTYPE, query[qcnt].QCLASS);
+		printf("\n");
 	}
 
 	if ((header.Flags & 0x8000) >> 15)
@@ -289,14 +313,20 @@ void DNSPacket::print()
 			printf("RDLENGTH = %d\n", answer[acnt].RDLENGTH);
 			if (answer[acnt].TYPE == 1)
 			{
-				printf("RDATA = %d.%d.%d.%d", answer[acnt].RDATA[0], answer[acnt].RDATA[1], answer[acnt].RDATA[2], answer[acnt].RDATA[3]);
+				printf("RDATA = %d.%d.%d.%d\n", answer[acnt].RDATA[0], answer[acnt].RDATA[1], answer[acnt].RDATA[2], answer[acnt].RDATA[3]);
 			}
+			else
+			{
+				std::cout << answer[acnt].RDATA << std::endl;
+			}
+			printf("\n");
 		}
 	}
 }
 
 void DNSPacket::printraw()
 {
+	printf("-----------------Raw Data-----------------\n");
 	unsigned temp;
 	for (int i = 0; i < raw_data.len; i++)
 	{

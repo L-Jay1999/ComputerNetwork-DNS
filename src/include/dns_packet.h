@@ -39,7 +39,8 @@ struct DNSAnswer
 struct QueueData
 {
 	int len;
-	char* data;
+	char *data;
+	//std::string data;
 	sockaddr addr;
 };
 
