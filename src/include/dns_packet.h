@@ -27,12 +27,12 @@ struct DNSQuery
 
 struct DNSAnswer
 {
-	unsigned short NAME;
-	unsigned int TYPE;
-	unsigned int CLASS;
+	std::string NAME;
+	unsigned short RR;
+	unsigned short CLASS;
 	unsigned int TTL;
-	unsigned int RDLENGTH;
-	unsigned int RDATA;
+	unsigned short RDLENGTH;
+	unsigned int* RDATA;
 };
 
 struct QueueData
@@ -46,8 +46,9 @@ struct DNSPacket
 {
 public:
 	bool Parse(const QueueData &raw_packet);
+	bool Packet();
 	QueueData raw_data;
 	DNSHeader header;
-	DNSQuery query;
-	DNSAnswer answer;
+	DNSQuery *query;
+	DNSAnswer *answer;
 };
