@@ -30,32 +30,67 @@ void DNSSender::set_queue(MyQueue *queue)
 
 void DNSSender::Responce()
 {
-	/*
-	if (!(dns_packet_.header.Flags >> 15))
+	if (dns_packet_.header.Flags >> 15 == 0)
 	{
-		HostState state = host_list_->get_host_state(dns_packet_.query.QNAME);
-		if (state == FIND)
+		for (int qcnt = 0; qcnt < dns_packet_.header.QDCOUNT; qcnt++)
 		{
-			std::string ip_addr = host_list_->get_ip_str(dns_packet_.query.QNAME);
-		}
-		else if (state == BANNED)
-		{
-			std::string ip_addr = "0.0.0.0";
-		}
-		else
-		{
-			id_ip_.insert(std::pair<unsigned short, sockaddr>(dns_packet_.header.ID, temp_qdata.addr));
+			HostState state = host_list_->get_host_state(dns_packet_.query[qcnt].QNAME);
+			if (state == FIND)
+			{
+				std::string ip_addr = host_list_->get_ip_str(dns_packet_.query[qcnt].QNAME);
+				set_reply(ip_addr);
+				dns_packet_.Packet();
+				//todo
+			}
+			else if (state == BANNED)
+			{
+				std::string ip_addr = "0.0.0.0";
+				set_reply(ip_addr);
+				dns_packet_.Packet();
+				//todo
+			}
+			else
+			{
+				id_ip_->insert(std::pair<unsigned short, sockaddr>(dns_packet_.header.ID, dns_packet_.raw_data.addr));
+				//todo
+			}
 		}
 	}
 	else
 	{
-		auto iter = id_ip_.find(dns_packet.header.ID);
-		if (iter == id_ip_.end())
+		auto iter = id_ip_->find(dns_packet_.header.ID);
+		if (iter == id_ip_->end())
 		{
 			return;
 		}
 		sockaddr addr = iter->second;
-		id_ip_.erase(iter);
+		id_ip_->erase(iter);
+		//todo
 	}
-	*/
+}
+
+void DNSSender::set_reply(std::string ip)
+{
+	dns_packet_.header.Flags = 0x8180;
+	dns_packet_.header.ANCOUNT = 1;
+
+	dns_packet_.answer = new DNSAnswer;
+	//dns_packet_.answer->NAME = name;
+	dns_packet_.answer->TYPE = 1;
+	dns_packet_.answer->CLASS = 1;
+	dns_packet_.answer->TTL = 168;
+	dns_packet_.answer->RDLENGTH = 4;
+
+	std::string temp;
+	for (int i = 0; i < ip.length(); i++)
+	{
+		if (ip[i] == '.')
+		{
+			dns_packet_.answer->RDATA.push_back(static_cast<unsigned char>(std::stoi(temp)));
+			temp.clear();
+		}
+		else temp.push_back(ip[i]);
+	}
+	dns_packet_.answer->RDATA.push_back(static_cast<unsigned char>(std::stoi(temp)));
+	temp.clear();
 }
