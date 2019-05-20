@@ -21,7 +21,7 @@ enum SocketType
 
 inline MySocket::MySocket(SocketType sock_type) : sock_type_(sock_type)
 {
-	if (InitSock(soc_type_) == ERROR_SUCCESS)
+	if (InitSock(sock_type_) == ERROR_SUCCESS)
 	{
 		init_success_ = true;
 		// log write
