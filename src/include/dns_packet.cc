@@ -1,3 +1,8 @@
+#include <cstdio>
+#include <string>
+#include <iostream>
+#include <cstdio>
+
 #include "dns_packet.h"
 
 static unsigned short ctos(unsigned char hbyte, unsigned char lbyte)
@@ -32,6 +37,11 @@ static unsigned short inttos(unsigned int& x)
 	x = static_cast <unsigned short> (x);
 	x = a;
 	return b;
+}
+
+DNSPacket::~DNSPacket()
+{
+	DeleteAll();
 }
 
 bool DNSPacket::Parse(const QueueData &raw_packet)
@@ -139,7 +149,7 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 	return true;
 }
 
-bool DNSPacket::Packet()
+bool DNSPacket::to_packet()
 {
 	//memset(raw_data.data, '\0', sizeof(raw_data.data));
 	//raw_data.data.clear();
@@ -279,7 +289,7 @@ bool DNSPacket::Packet()
 	return true;
 }
 
-void DNSPacket::print()
+void DNSPacket::PrintPacket()
 {
 	printf("------------------Header------------------\n");
 	printf("ID:%X\n", header.ID);
@@ -324,7 +334,7 @@ void DNSPacket::print()
 	}
 }
 
-void DNSPacket::printraw()
+void DNSPacket::PrintRawData()
 {
 	printf("-----------------Raw Data-----------------\n");
 	unsigned temp;
@@ -336,7 +346,7 @@ void DNSPacket::printraw()
 	}
 }
 
-void DNSPacket::deleteall()
+void DNSPacket::DeleteAll()
 {
 	delete query;
 	delete answer;

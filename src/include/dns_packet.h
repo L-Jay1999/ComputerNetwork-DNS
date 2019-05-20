@@ -41,19 +41,26 @@ struct QueueData
 	int len;
 	char *data;
 	//std::string data;
-	sockaddr addr;
+	sockaddr_in addr;
 };
 
 struct DNSPacket
 {
 public:
+	DNSPacket() = default;
+	DNSPacket(const DNSPacket &other) = delete;
+	DNSPacket &operator=(const DNSPacket &rhs) = delete;
+	~DNSPacket();
+
 	bool Parse(const QueueData &raw_packet);
-	bool Packet();
-	void printraw();
-	void print();
-	void deleteall();
+	bool to_packet();
+	void PrintRawData();
+	void PrintPacket();
+
 	QueueData raw_data;
 	DNSHeader header;
 	DNSQuery *query;
 	DNSAnswer *answer;
+private:
+	void DeleteAll();
 };

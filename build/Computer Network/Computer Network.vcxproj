@@ -26,7 +26,7 @@
     <ClCompile Include="..\..\src\include\job_queue.cc" />
     <ClCompile Include="..\..\src\include\my_queue.cc" />
     <ClCompile Include="..\..\src\include\my_socket.cc" />
-    <ClCompile Include="..\..\src\main.cc" />
+    <ClCompile Include="..\..\src\rel_main.cc" />
     <ClCompile Include="..\..\test\dns_packet_test.cc" />
   </ItemGroup>
   <ItemGroup>
