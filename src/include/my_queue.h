@@ -5,7 +5,8 @@
 #include <utility>
 #include <condition_variable>
 
-struct QueueData;
+#include "dns_packet.h"
+
 class MyQueue
 {
 public:
