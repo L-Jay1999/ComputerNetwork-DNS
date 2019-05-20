@@ -42,9 +42,6 @@
     <ClCompile Include="..\..\src\rel_main.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="my_socket_test.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\include\my_map.cc">
       <Filter>源文件</Filter>
     </ClCompile>

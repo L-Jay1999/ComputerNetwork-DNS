@@ -29,7 +29,6 @@
     <ClCompile Include="..\..\src\include\my_socket.cc" />
     <ClCompile Include="..\..\src\rel_main.cc" />
     <ClCompile Include="..\..\test\dns_packet_test.cc" />
-    <ClCompile Include="my_socket_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\include\dns_packet.h" />
