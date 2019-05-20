@@ -18,6 +18,13 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\include\my_map.cc" />
+    <ClCompile Include="..\..\test\my_map_test.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\include\my_map.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{43C691DD-819F-4DF3-9570-64B10A3E079A}</ProjectGuid>
@@ -122,16 +129,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\src\include\dns_packet.cc" />
-    <ClCompile Include="..\..\src\include\my_socket.cc" />
-    <ClCompile Include="..\..\test\my_socket_test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\src\include\dns_packet.h" />
-    <ClInclude Include="..\..\src\include\log.h" />
-    <ClInclude Include="..\..\src\include\my_socket.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

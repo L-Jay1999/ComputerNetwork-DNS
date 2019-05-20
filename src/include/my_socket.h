@@ -54,6 +54,7 @@ private:
 	SocketType sock_type_;
 	SOCKET sock_ = INVALID_SOCKET;
 	sockaddr_in my_addr_info_;
+	sockaddr_in superior_server_addr_;
 	int my_addr_info_size_ = sizeof(my_addr_info_);
 	sockaddr_in from_;
 	int from_len_ = sizeof(from_);
