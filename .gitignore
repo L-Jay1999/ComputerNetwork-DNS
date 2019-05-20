@@ -55,3 +55,7 @@ build/.vs
 build/Computer Network/x64
 build/x64
 .vscode
+*.tlog
+*.log
+build/TestProj/x64/Debug/TestProj.vcxproj.FileListAbsolute.txt
+test/test_map

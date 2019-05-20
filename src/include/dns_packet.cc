@@ -59,7 +59,7 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 	}*/
 
 	int packet_len = raw_packet.len;
-	sockaddr packet_addr = raw_packet.addr;
+	sockaddr_in packet_addr = raw_packet.addr;
 
 	header.ID = ctos(packet[0], packet[1]);
 	header.Flags = ctos(packet[2], packet[3]);

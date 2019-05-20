@@ -13,15 +13,23 @@ static const char *kDefaultRecvPort = "53";
 
 static int get_send_port_random();
 
-enum SocketType
+MySocket::MySocket(SocketType sock_type) : sock_type_(sock_type)
 {
-	SEND_SOCKET = 0,
-	RECV_SOCKET,
-};
+	if (InitSock(sock_type_, kDefaultRecvPort) == ERROR_SUCCESS)
+	{
+		init_success_ = true;
+		// log write
+	}
+	else
+	{
+		init_success_ = false;
+		// log write
+	}
+}
 
-inline MySocket::MySocket(SocketType sock_type) : sock_type_(sock_type)
+MySocket::MySocket(SocketType sock_type, const char *port) : sock_type_(sock_type)
 {
-	if (InitSock(soc_type_) == ERROR_SUCCESS)
+	if (InitSock(sock_type_, port) == ERROR_SUCCESS)
 	{
 		init_success_ = true;
 		// log write
@@ -38,8 +46,9 @@ MySocket::~MySocket()
 	if (sock_ != INVALID_SOCKET)
 	{
 		last_error_ = closesocket(sock_);
-		if (last_error_)
+		if (last_error_ == SOCKET_ERROR)
 		{
+			last_error_ = WSAGetLastError();
 			// log write
 		}
 	}
@@ -54,7 +63,7 @@ MySocket::~MySocket()
 	}
 }
 
-DWORD MySocket::InitSock(SocketType soc_type)
+DWORD MySocket::InitSock(SocketType soc_type, const char *port)
 {
 	WSADATA wsaData;
 	int last_error_;
@@ -75,7 +84,7 @@ DWORD MySocket::InitSock(SocketType soc_type)
 	hint.ai_protocol = IPPROTO_UDP;
 	hint.ai_flags = AI_PASSIVE;
 
-	last_error_ = getaddrinfo(NULL, kDefaultRecvPort, &hint, &result);
+	last_error_ = getaddrinfo(NULL, port, &hint, &result);
 	if (last_error_)
 	{
 		// log write
@@ -104,7 +113,8 @@ DWORD MySocket::InitSock(SocketType soc_type)
 			return last_error_;
 		}
 
-		last_error_ = getsockname(sock_, reinterpret_cast<sockaddr *>(&my_addr_info_), reinterpret_cast<int *>(sizeof(my_addr_info_)));
+		my_addr_info_size_ = sizeof(my_addr_info_);
+		last_error_ = getsockname(sock_, reinterpret_cast<sockaddr *>(&my_addr_info_), &my_addr_info_size_);
 		if (last_error_)
 		{
 			freeaddrinfo(result);
@@ -116,10 +126,12 @@ DWORD MySocket::InitSock(SocketType soc_type)
 	}
 	else
 	{
-		last_error_ = getsockopt(sock_, SOL_SOCKET, SO_MAX_MSG_SIZE, reinterpret_cast<char *>(&max_msg_size_), reinterpret_cast<int *>(sizeof(max_msg_size_)));
+		max_msg_size_len_ = sizeof(max_msg_size_);
+		last_error_ = getsockopt(sock_, SOL_SOCKET, SO_MAX_MSG_SIZE, reinterpret_cast<char *>(&max_msg_size_), reinterpret_cast<int *>(&max_msg_size_len_));
 		if (last_error_ == SOCKET_ERROR)
 		{
 			// log write
+			freeaddrinfo(result);
 			WSACleanup();
 			return last_error_;
 		}
@@ -131,7 +143,7 @@ DWORD MySocket::_RecvFrom(QueueData &queue_data)
 {
 	while (1)
 	{
-		recv_len_ = recvfrom(sock_, recvbuf_, recvbuflen_, 0, reinterpret_cast<sockaddr *>(&from_), reinterpret_cast<int *>(sizeof(from_)));
+		recv_len_ = recvfrom(sock_, recvbuf_, recvbuflen_, 0, reinterpret_cast<sockaddr *>(&from_), &from_len_);
 		if (recv_len_ == 0)
 		{
 			// log write : packet contains no data
@@ -225,8 +237,7 @@ int get_send_port_random()
 	static constexpr int kSendPortLowerBound = 10000;
 	static constexpr int kSendPortUpperBound = 20000;
 
-	static std::random_device rd;
-	static std::mt19937 g(rd);
+	static std::mt19937 g;
 	static std::uniform_int_distribution<int> uid(kSendPortLowerBound, kSendPortUpperBound);
 
 	return uid(g);

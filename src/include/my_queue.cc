@@ -1,11 +1,10 @@
-#include "my_queue.h"
-
 #include <deque>
 #include <mutex>
 #include <utility>
 #include <condition_variable>
 
 #include "dns_packet.h"
+#include "my_queue.h"
 
 void MyQueue::push_back(const QueueData &qdata)
 {

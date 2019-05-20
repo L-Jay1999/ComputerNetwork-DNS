@@ -18,35 +18,10 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\src\include\dns_packet.cc" />
-    <ClCompile Include="..\..\src\include\dns_receiver.cc" />
-    <ClCompile Include="..\..\src\include\dns_sender.cc" />
-    <ClCompile Include="..\..\src\include\host_list.cc" />
-    <ClCompile Include="..\..\src\include\job_queue.cc" />
-    <ClCompile Include="..\..\src\include\my_queue.cc" />
-    <ClCompile Include="..\..\src\include\my_socket.cc" />
-    <ClCompile Include="..\..\src\rel_main.cc" />
-    <ClCompile Include="..\..\test\dns_packet_test.cc" />
-    <ClCompile Include="my_socket_test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\src\include\dns_packet.h" />
-    <ClInclude Include="..\..\src\include\dns_receiver.h" />
-    <ClInclude Include="..\..\src\include\dns_sender.h" />
-    <ClInclude Include="..\..\src\include\host_list.h" />
-    <ClInclude Include="..\..\src\include\job_queue.h" />
-    <ClInclude Include="..\..\src\include\log.h" />
-    <ClInclude Include="..\..\src\include\my_queue.h" />
-    <ClInclude Include="..\..\src\include\my_socket.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\..\data\hosts.txt" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{9C6D4445-EEA5-420E-B196-3429ABAA2855}</ProjectGuid>
-    <RootNamespace>ComputerNetwork</RootNamespace>
+    <ProjectGuid>{43C691DD-819F-4DF3-9570-64B10A3E079A}</ProjectGuid>
+    <RootNamespace>TestProj</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -94,8 +69,8 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
@@ -106,7 +81,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
@@ -147,6 +122,16 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\include\dns_packet.cc" />
+    <ClCompile Include="..\..\src\include\my_socket.cc" />
+    <ClCompile Include="..\..\test\my_socket_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\include\dns_packet.h" />
+    <ClInclude Include="..\..\src\include\log.h" />
+    <ClInclude Include="..\..\src\include\my_socket.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
