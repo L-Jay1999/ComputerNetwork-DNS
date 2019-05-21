@@ -31,7 +31,10 @@ private:
 	MySocket socQuery;   // 向上级查询时使用
 	std::string address; // 上级dns服务器地址
 	DNSPacket dns_packet_;
-	std::map <unsigned short, sockaddr> *id_ip_;
+	std::map <unsigned short, sockaddr_in> *id_ip_;
 
 	void set_reply(std::string ip);
+	void set_sockaddr(sockaddr_in addr);
+	void send_to_client();
+	void send_to_DNS();
 };

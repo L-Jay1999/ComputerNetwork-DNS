@@ -39,20 +39,24 @@ void DNSSender::Responce()
 			{
 				std::string ip_addr = host_list_->get_ip_str(dns_packet_.query[qcnt].QNAME);
 				set_reply(ip_addr);
-				dns_packet_.Packet();
+				dns_packet_.to_packet();
 				//todo
+				send_to_client();
 			}
 			else if (state == BANNED)
 			{
 				std::string ip_addr = "0.0.0.0";
 				set_reply(ip_addr);
-				dns_packet_.Packet();
+				dns_packet_.to_packet();
 				//todo
+				send_to_client();
 			}
 			else
 			{
-				id_ip_->insert(std::pair<unsigned short, sockaddr>(dns_packet_.header.ID, dns_packet_.raw_data.addr));
+				id_ip_->insert(std::pair<unsigned short, sockaddr_in>(dns_packet_.header.ID, dns_packet_.raw_data.addr));
 				//todo
+
+				send_to_DNS();
 			}
 		}
 	}
@@ -63,7 +67,7 @@ void DNSSender::Responce()
 		{
 			return;
 		}
-		sockaddr addr = iter->second;
+		sockaddr_in addr = iter->second;
 		id_ip_->erase(iter);
 		//todo
 	}
@@ -93,4 +97,27 @@ void DNSSender::set_reply(std::string ip)
 	}
 	dns_packet_.answer->RDATA.push_back(static_cast<unsigned char>(std::stoi(temp)));
 	temp.clear();
+}
+
+void DNSSender::set_sockaddr(sockaddr_in addr)
+{
+	dns_packet_.raw_data.addr = addr;
+}
+
+void DNSSender::send_to_client()
+{
+	if (socSend.SendTo(dns_packet_.raw_data))
+	{
+		//log
+
+	}
+	else
+	{
+		//log
+	}
+}
+
+void DNSSender::send_to_DNS()
+{
+
 }
