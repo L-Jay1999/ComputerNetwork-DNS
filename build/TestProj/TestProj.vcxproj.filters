@@ -15,24 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\include\dns_packet.cc">
+    <ClCompile Include="..\..\test\my_map_test.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\include\my_socket.cc">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\my_socket_test.cpp">
+    <ClCompile Include="..\..\src\include\my_map.cc">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\include\dns_packet.h">
-      <Filter>源文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\include\log.h">
-      <Filter>源文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\include\my_socket.h">
+    <ClInclude Include="..\..\src\include\my_map.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>

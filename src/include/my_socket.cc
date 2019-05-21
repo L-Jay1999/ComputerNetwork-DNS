@@ -9,13 +9,14 @@
 #include "dns_packet.h"
 #include "log.h"
 
-static const char *kDefaultRecvPort = "53";
+static const char *kDefaultDNSPort = "53";
+static const char *kSuperiorDNSServerAddr = "10.3.9.4";
 
 static int get_send_port_random();
 
 MySocket::MySocket(SocketType sock_type) : sock_type_(sock_type)
 {
-	if (InitSock(sock_type_, kDefaultRecvPort) == ERROR_SUCCESS)
+	if (InitSock(sock_type_, kDefaultDNSPort) == ERROR_SUCCESS)
 	{
 		init_success_ = true;
 		// log write
@@ -135,6 +136,18 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port)
 			WSACleanup();
 			return last_error_;
 		}
+
+		freeaddrinfo(result);
+		last_error_ = getaddrinfo(kSuperiorDNSServerAddr, kDefaultDNSPort, &hint, &result);
+		if (last_error_)
+		{
+			WSACleanup();
+			return last_error_;
+		}
+		sockaddr_in *temp = reinterpret_cast<sockaddr_in *>(result->ai_addr);
+		superior_server_addr_ = *temp;
+
+		freeaddrinfo(result);
 	}
 	return ERROR_SUCCESS;
 }

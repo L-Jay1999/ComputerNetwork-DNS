@@ -6,6 +6,7 @@
 #include <condition_variable>
 
 #include "dns_packet.h"
+// using QueueData = long long;
 
 class MyQueue
 {
