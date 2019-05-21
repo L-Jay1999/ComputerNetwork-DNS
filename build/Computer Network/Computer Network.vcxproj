@@ -24,11 +24,11 @@
     <ClCompile Include="..\..\src\include\dns_sender.cc" />
     <ClCompile Include="..\..\src\include\host_list.cc" />
     <ClCompile Include="..\..\src\include\job_queue.cc" />
+    <ClCompile Include="..\..\src\include\my_map.cc" />
     <ClCompile Include="..\..\src\include\my_queue.cc" />
     <ClCompile Include="..\..\src\include\my_socket.cc" />
     <ClCompile Include="..\..\src\rel_main.cc" />
     <ClCompile Include="..\..\test\dns_packet_test.cc" />
-    <ClCompile Include="my_socket_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\include\dns_packet.h" />
@@ -37,6 +37,7 @@
     <ClInclude Include="..\..\src\include\host_list.h" />
     <ClInclude Include="..\..\src\include\job_queue.h" />
     <ClInclude Include="..\..\src\include\log.h" />
+    <ClInclude Include="..\..\src\include\my_map.h" />
     <ClInclude Include="..\..\src\include\my_queue.h" />
     <ClInclude Include="..\..\src\include\my_socket.h" />
   </ItemGroup>
