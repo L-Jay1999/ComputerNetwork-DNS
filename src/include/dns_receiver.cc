@@ -1,12 +1,15 @@
 #include "dns_receiver.h"
 
-DNSReceiver::DNSReceiver(std::deque<QueueData> *jobq, std::mutex *mutex)
-{
-}
-
-void DNSReceiver::start()
+void DNSReceiver::Start()
 {
 	while (true)
 	{
+		QueueData temp = socRecv.RecvFrom();
+		jobq->push_back(temp);
 	}
+}
+
+void DNSReceiver::set_queue(MyQueue* queue)
+{
+	jobq = queue;
 }

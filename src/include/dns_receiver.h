@@ -7,15 +7,16 @@
 class DNSReceiver // 接收dns数据包并将其放到工作队列上
 {
 public:
-	DNSReceiver(JobQueue* jobque);
-	void start();
+	DNSReceiver() = default;
+	void Start();
+	void set_queue(MyQueue* queue);
 
 private:
 	//DNSPacket dns_packet_;    // 保存dns数据包的详细信息
 
 	//std::deque<QueueData> *jobq; // 保存收到的
-	JobQueue* jobque;
+	MyQueue* jobq;
 
-	MySocket socRecv; // 接收dns数据包
+	MySocket socRecv = MySocket(RECV_SOCKET); // 接收dns数据包
 					  // .......
 };

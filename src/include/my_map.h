@@ -11,11 +11,12 @@ class MyMap
 public:
 	MyMap() = default;
 
-	bool insert(int id, const sockaddr &addr);
-	sockaddr find(int id);
-	bool erase(int id);
+	bool insert(unsigned short id, const sockaddr_in &addr);
+	sockaddr_in get(unsigned short id);
+	bool find(unsigned short id);
+	bool erase(unsigned short id);
 
 private:
-	std::map<int, sockaddr> map_;
+	std::map<unsigned short, sockaddr_in> map_;
 	std::shared_mutex mutex_;
 };

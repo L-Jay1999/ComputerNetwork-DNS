@@ -35,7 +35,8 @@ public:
 	}
 	unsigned short get_port_recver() const { return my_addr_info_.sin_port; }
 	std::string get_port_recver_str() const { return std::to_string(htons(my_addr_info_.sin_port)); }
-
+	
+	sockaddr_in get_superior_server() const { return superior_server_addr_; }
 
 private:
 	static constexpr int recvbuflen_ = 512;

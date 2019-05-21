@@ -28,6 +28,11 @@ void DNSSender::set_queue(MyQueue *queue)
 	jobq = queue;
 }
 
+void DNSSender::set_map(MyMap* mymap)
+{
+	my_map_ = mymap;
+}
+
 void DNSSender::Responce()
 {
 	if (dns_packet_.header.Flags >> 15 == 0)
@@ -37,39 +42,33 @@ void DNSSender::Responce()
 			HostState state = host_list_->get_host_state(dns_packet_.query[qcnt].QNAME);
 			if (state == FIND)
 			{
-				std::string ip_addr = host_list_->get_ip_str(dns_packet_.query[qcnt].QNAME);
-				set_reply(ip_addr);
-				dns_packet_.to_packet();
-				//todo
+				set_reply(host_list_->get_ip_str(dns_packet_.query[qcnt].QNAME));
 				send_to_client();
 			}
 			else if (state == BANNED)
 			{
-				std::string ip_addr = "0.0.0.0";
-				set_reply(ip_addr);
-				dns_packet_.to_packet();
-				//todo
+				set_reply("0.0.0.0");
 				send_to_client();
 			}
 			else
 			{
-				id_ip_->insert(std::pair<unsigned short, sockaddr_in>(dns_packet_.header.ID, dns_packet_.raw_data.addr));
-				//todo
-
+				my_map_->insert(dns_packet_.header.ID, dns_packet_.raw_data.addr);
 				send_to_DNS();
 			}
 		}
 	}
 	else
 	{
-		auto iter = id_ip_->find(dns_packet_.header.ID);
-		if (iter == id_ip_->end())
+		if (my_map_->find(dns_packet_.header.ID))
 		{
-			return;
+			auto temp = my_map_->get(dns_packet_.header.ID);
+			my_map_->erase(dns_packet_.header.ID);
+			send_to_client(temp);
 		}
-		sockaddr_in addr = iter->second;
-		id_ip_->erase(iter);
-		//todo
+		else
+		{
+			//有错
+		}
 	}
 }
 
@@ -97,11 +96,7 @@ void DNSSender::set_reply(std::string ip)
 	}
 	dns_packet_.answer->RDATA.push_back(static_cast<unsigned char>(std::stoi(temp)));
 	temp.clear();
-}
-
-void DNSSender::set_sockaddr(sockaddr_in addr)
-{
-	dns_packet_.raw_data.addr = addr;
+	dns_packet_.to_packet();
 }
 
 void DNSSender::send_to_client()
@@ -117,7 +112,30 @@ void DNSSender::send_to_client()
 	}
 }
 
+void DNSSender::send_to_client(sockaddr_in addr)
+{
+	dns_packet_.raw_data.addr = addr;
+	if (socSend.SendTo(dns_packet_.raw_data))
+	{
+		//log
+
+	}
+	else
+	{
+		//log
+	}
+}
+
 void DNSSender::send_to_DNS()
 {
+	dns_packet_.raw_data.addr = socSend.get_superior_server();
+	if (socSend.SendTo(dns_packet_.raw_data))
+	{
+		//log
 
+	}
+	else
+	{
+		//log
+	}
 }

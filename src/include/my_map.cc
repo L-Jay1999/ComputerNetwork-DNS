@@ -7,7 +7,7 @@
 
 #include "my_map.h"
 
-bool MyMap::insert(int id, const sockaddr &addr)
+bool MyMap::insert(unsigned short id, const sockaddr_in &addr)
 {
 	std::unique_lock<std::shared_mutex> lock(mutex_);
 	if (!map_.count(id))
@@ -19,16 +19,16 @@ bool MyMap::insert(int id, const sockaddr &addr)
 		return false;
 }
 
-sockaddr MyMap::find(int id)
+bool MyMap::find(unsigned short id)
 {
 	std::shared_lock<std::shared_mutex> lock(mutex_);
 	if (map_.count(id))
-		return map_.at(id);
+		return true;
 	else
-		return sockaddr();
+		return false;
 }
 
-bool MyMap::erase(int id)
+bool MyMap::erase(unsigned short id)
 {
 	std::unique_lock<std::shared_mutex> lock(mutex_);
 	if (map_.count(id))
@@ -40,4 +40,13 @@ bool MyMap::erase(int id)
 	{
 		return false;
 	}
+}
+
+sockaddr_in MyMap::get(unsigned short id)
+{
+	std::shared_lock<std::shared_mutex> lock(mutex_);
+	if (map_.count(id))
+		return map_.at(id);
+	else
+		return sockaddr_in();
 }
