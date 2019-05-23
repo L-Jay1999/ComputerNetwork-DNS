@@ -1,9 +1,64 @@
 #include <cstdio>
 #include <string>
+#include <vector>
 #include <iostream>
 #include <cstdio>
 
 #include "dns_packet.h"
+
+template<typename T>
+static void CopyToCSTR(const T val, char *buffer, int &ptr)
+{
+	char temp_LE[12];
+	const char *p_char = reinterpret_cast<const char *>(&val);
+
+	for (int i = sizeof(T) - 1; i >= 0; i--)
+	{
+		temp_LE[i] = *p_char;
+		p_char++;
+	}
+
+	T *p_HE = reinterpret_cast<T *>(buffer + ptr);
+	T *p_LE = reinterpret_cast<T *>(temp_LE);
+	*p_HE = *p_LE;
+	ptr += sizeof(T);
+}
+
+static void CopyToCSTR(const std::string &str, char *buffer, int &ptr)
+{
+	for (const auto c : str)
+		CopyToCSTR(c, buffer, ptr);
+}
+
+template<typename T>
+static void ReadFromCSTR(T &dest, char *src, int &ptr)
+{
+	char temp_HE[12];
+	char *p_char = (src + ptr);
+
+	for (int i = sizeof(T) - 1; i >= 0; i--)
+	{
+		temp_HE[i] = *p_char;
+		p_char++;
+	}
+
+	T *p_HE = reinterpret_cast<T *>(temp_HE);
+	dest = *p_HE;
+	ptr += sizeof(T);
+}
+
+static void ReadFromCSTR(char *dest, const unsigned len, char *src, int &ptr)
+{
+	for (unsigned i = 0; i < len; i++)
+		ReadFromCSTR(dest[i], src, ptr);
+}
+
+static void ReadFromCSTR(std::string &dest, const unsigned len, char *src, int &ptr)
+{
+	for (unsigned i = 0; i < len; i++)
+		dest.push_back(src[ptr++]);
+}
+
 
 static unsigned short ctos(unsigned char hbyte, unsigned char lbyte)
 {
@@ -30,7 +85,7 @@ static unsigned char stoc(unsigned short &x)
 	return b;
 }
 
-static unsigned short inttos(unsigned int& x)
+static unsigned short inttos(unsigned int &x)
 {
 	unsigned short a = static_cast<unsigned short> (x & 0x0000ffff);
 	unsigned short b = static_cast<unsigned short> (x >> 16);
@@ -48,7 +103,8 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 {
 	raw_data = raw_packet;
 	char *packet = raw_packet.data;
-	
+	int ptr = 0;
+
 	//char packet[256];
 	//strcpy_s(packet, raw_packet.data);
 	//std::string packet(raw_packet.data);
@@ -61,41 +117,32 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 	int packet_len = raw_packet.len;
 	sockaddr_in packet_addr = raw_packet.addr;
 
-	header.ID = ctos(packet[0], packet[1]);
-	header.Flags = ctos(packet[2], packet[3]);
-	header.QDCOUNT = ctos(packet[4], packet[5]);
-	header.ANCOUNT = ctos(packet[6], packet[7]);
-	header.NSCOUNT = ctos(packet[8], packet[9]);
-	header.ARCOUNT = ctos(packet[10], packet[11]);
+	ReadFromCSTR(header.ID, packet, ptr);
+	ReadFromCSTR(header.Flags, packet, ptr);
+	ReadFromCSTR(header.QDCOUNT, packet, ptr);
+	ReadFromCSTR(header.ANCOUNT, packet, ptr);
+	ReadFromCSTR(header.NSCOUNT, packet, ptr);
+	ReadFromCSTR(header.ARCOUNT, packet, ptr);
 
 	// query
 	query = new DNSQuery[header.QDCOUNT];
-	int p_question = 12;
+	// int p_question = 12;
 	unsigned char char_num;
-	for (int qcnt = 0; qcnt < header.QDCOUNT; qcnt++)
+	for (int query_cnt = 0; query_cnt < header.QDCOUNT; query_cnt++)
 	{
 		while (true)
 		{
-			char_num = static_cast<unsigned char>(packet[p_question]);
-			p_question++;
-			if (char_num == 0)break;
-			else
-			{
-				for (int i = 0; i < char_num; i++)
-				{
-					query[qcnt].QNAME.push_back(packet[p_question]);
-					++p_question;
-				}
-				query[qcnt].QNAME.push_back('.');
-			}
+			ReadFromCSTR(char_num, packet, ptr);
+			if (char_num == 0)
+				break;
+			ReadFromCSTR(query->QNAME, char_num, packet, ptr);
+			query[query_cnt].QNAME.push_back('.');
 		}
-		query[qcnt].QNAME.pop_back();
-		query[qcnt].QTYPE = ctos(packet[p_question], packet[p_question + 1]);
-		p_question += 2;
-		query[qcnt].QCLASS = ctos(packet[p_question], packet[p_question + 1]);
-		p_question += 2;
+		query[query_cnt].QNAME.pop_back();
+		ReadFromCSTR(query[query_cnt].QTYPE, packet, ptr);
+		ReadFromCSTR(query[query_cnt].QCLASS, packet, ptr);
 	}
-	
+
 
 	//answer
 	if (header.Flags >> 15)
@@ -103,47 +150,31 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 		answer = new DNSAnswer[header.ANCOUNT];
 		for (int acnt = 0; acnt < header.ANCOUNT; acnt++)
 		{
-			if ((unsigned char)packet[p_question] == 0xc0)
+			if ((unsigned char)packet[ptr] == 0xc0)
 			{
-				int p_question_temp = p_question;
-				p_question = (unsigned int)packet[p_question + 1];
+				int ptr_temp = ptr;
+				ptr = (int)packet[ptr + 1];
 				while (true)
 				{
-					char_num = static_cast<unsigned char>(packet[p_question]);
-					p_question++;
-					if (char_num == 0)break;
-					else
-					{
-						for (int i = 0; i < char_num; i++)
-						{
-							answer[acnt].NAME.push_back(packet[p_question]);
-							p_question++;
-						}
-						answer[acnt].NAME.push_back('.');
-					}
+					ReadFromCSTR(char_num, packet, ptr);
+					if (char_num == 0)
+						break;
+					ReadFromCSTR(answer[acnt].NAME, char_num, packet, ptr);
+					answer[acnt].NAME.push_back('.');
 				}
 				answer[acnt].NAME.pop_back();
-				p_question = p_question_temp;
-				p_question += 2;
+				ptr = ptr_temp;
+				ptr += sizeof(unsigned short);
 			}
 			else
 			{
 				std::cout << "warning" << std::endl;
 			}
-			answer[acnt].TYPE = ctos(packet[p_question], packet[p_question + 1]);
-			p_question += 2;
-			answer[acnt].CLASS = ctos(packet[p_question], packet[p_question + 1]);
-			p_question += 2;
-			answer[acnt].TTL = stoint(ctos(packet[p_question], packet[p_question + 1]), ctos(packet[p_question + 2], packet[p_question + 3]));
-			p_question += 4;
-			answer[acnt].RDLENGTH = ctos(packet[p_question], packet[p_question + 1]);
-			p_question += 2;
-			for (int i = 0; i < answer[acnt].RDLENGTH; i++)
-			{
-				//answer[acnt].RDATA[i] = stoint(ctos(packet[p_question], packet[p_question + 1]), ctos(packet[p_question + 2], packet[p_question + 3]));
-				answer[acnt].RDATA.push_back(static_cast<unsigned char>(packet[p_question]));
-				p_question++;
-			}
+			ReadFromCSTR(answer[acnt].TYPE, packet, ptr);
+			ReadFromCSTR(answer[acnt].CLASS, packet, ptr);
+			ReadFromCSTR(answer[acnt].TTL, packet, ptr);
+			ReadFromCSTR(answer[acnt].RDLENGTH, packet, ptr);
+			ReadFromCSTR(answer[acnt].RDATA, answer[acnt].RDLENGTH, packet, ptr);
 		}
 	}
 	return true;
@@ -153,75 +184,49 @@ bool DNSPacket::to_packet()
 {
 	//memset(raw_data.data, '\0', sizeof(raw_data.data));
 	//raw_data.data.clear();
-	
+	// char data[2048];
+	char *data = raw_data.data;
+	int ptr = 0;
+
 	//头
-	unsigned short ID = header.ID;
-	unsigned short Flags = header.Flags;
-	
-	int isans = Flags >> 15;
+	int isans = header.Flags >> 15;
 
-	unsigned short QDCOUNT = header.QDCOUNT;
-	unsigned short ANCOUNT = header.ANCOUNT;
-	unsigned short NSCOUNT = header.NSCOUNT;
-	unsigned short ARCOUNT = header.ARCOUNT;
-
-	raw_data.data[0] = stoc(ID);
-	raw_data.data[1] = static_cast<unsigned char>(ID);
-
-	raw_data.data[2] = stoc(Flags);
-	raw_data.data[3] = static_cast<unsigned char>(Flags);
-
-	raw_data.data[4] = stoc(QDCOUNT);
-	raw_data.data[5] = static_cast<unsigned char>(QDCOUNT);
-
-	raw_data.data[6] = stoc(ANCOUNT);
-	raw_data.data[7] = static_cast<unsigned char>(ANCOUNT);
-
-	raw_data.data[8] = stoc(NSCOUNT);
-	raw_data.data[9] = static_cast<unsigned char>(NSCOUNT);
-
-	raw_data.data[10] = stoc(ARCOUNT);
-	raw_data.data[11] = static_cast<unsigned char>(ARCOUNT);
+	CopyToCSTR(header.ID, data, ptr);
+	CopyToCSTR(header.Flags, data, ptr);
+	CopyToCSTR(header.QDCOUNT, data, ptr);
+	CopyToCSTR(header.ANCOUNT, data, ptr);
+	CopyToCSTR(header.NSCOUNT, data, ptr);
+	CopyToCSTR(header.ARCOUNT, data, ptr);
 
 	//问题
-	int p_question = 12;
 	unsigned short QTYPE;
 	unsigned short QCLASS;
-	for (int qcnt = 0; qcnt < QDCOUNT; qcnt++)
+	for (int query_cnt = 0; query_cnt < header.QDCOUNT; query_cnt++)
 	{
-		QTYPE = query[qcnt].QTYPE;
-		QCLASS = query[qcnt].QCLASS;
-		int temp, cnt = 0;
-		p_question++;
-		for (int i = 0; i < query[qcnt].QNAME.length(); i++)
+		QTYPE = query[query_cnt].QTYPE;
+		QCLASS = query[query_cnt].QCLASS;
+		int cnt = 0;
+		ptr++;
+		for (int i = 0; i < query[query_cnt].QNAME.length(); i++)
 		{
-			if (query[qcnt].QNAME[i] != '.')
+			if (query[query_cnt].QNAME[i] != '.')
 			{
 				cnt++;
-				raw_data.data[p_question] = query[qcnt].QNAME[i];
+				data[ptr] = query[query_cnt].QNAME[i];
 			}
 			else
 			{
-				raw_data.data[p_question - (cnt + 1)] = cnt;
+				data[ptr - (cnt + 1)] = cnt;
 				cnt = 0;
 			}
-			p_question++;
+			ptr++;
 		}
-		raw_data.data[p_question - (cnt + 1)] = cnt;
-		raw_data.data[p_question] = 0;
-		p_question++;
+		data[ptr - (cnt + 1)] = cnt;
+		// end of name
+		CopyToCSTR('\0', data, ptr);
 
-		//QTYPE
-		raw_data.data[p_question] = stoc(QTYPE);
-		p_question++;
-		raw_data.data[p_question] = static_cast<unsigned char>(QTYPE);
-		p_question++;
-
-		//QCLASS
-		raw_data.data[p_question] = stoc(QCLASS);
-		p_question++;
-		raw_data.data[p_question] = static_cast<unsigned char>(QCLASS);
-		p_question++;
+		CopyToCSTR(query[query_cnt].QTYPE, data, ptr);
+		CopyToCSTR(query[query_cnt].QCLASS, data, ptr);
 	}
 
 	//回答
@@ -231,60 +236,37 @@ bool DNSPacket::to_packet()
 		unsigned short CLASS;
 		unsigned int TTL;
 		unsigned short RDLENGTH;
-		for (int acnt = 0; acnt < ANCOUNT; acnt++)
+		for (int acnt = 0; acnt < header.ANCOUNT; acnt++)
 		{
 			TYPE = answer[acnt].TYPE;
 			CLASS = answer[acnt].CLASS;
 			TTL = answer[acnt].TTL;
 			RDLENGTH = answer[acnt].RDLENGTH;
 
-			//NAME
-			raw_data.data[p_question] = 0xc0;
-			p_question++;
-			raw_data.data[p_question] = 0x0c;
-			p_question++;
+			//NAME (PTR)
+			CopyToCSTR((char)0xc0, data, ptr);
+			CopyToCSTR((char)0x0c, data, ptr);
 
 			//RR
-			raw_data.data[p_question] = stoc(TYPE);
-			p_question++;
-			raw_data.data[p_question] = static_cast<unsigned char>(TYPE);
-			p_question++;
-
-			//CLASS
-			raw_data.data[p_question] = stoc(CLASS);
-			p_question++;
-			raw_data.data[p_question] = static_cast<unsigned char>(CLASS);
-			p_question++;
-
-			//TTL
-			unsigned short ttla = inttos(TTL);
-			unsigned short ttlb = TTL;
-			raw_data.data[p_question] = stoc(ttla);
-			p_question++;
-			raw_data.data[p_question] = static_cast<unsigned char>(ttla);
-			p_question++;
-			raw_data.data[p_question] = stoc(ttlb);
-			p_question++;
-			raw_data.data[p_question] = static_cast<unsigned char>(ttlb);
-			p_question++;
-
-			//RDLENGTH
-			raw_data.data[p_question] = stoc(RDLENGTH);
-			p_question++;
-			raw_data.data[p_question] = static_cast<unsigned char>(RDLENGTH);
-			p_question++;
+			CopyToCSTR(TYPE, data, ptr);
+			CopyToCSTR(CLASS, data, ptr);
+			CopyToCSTR(TTL, data, ptr);
+			CopyToCSTR(RDLENGTH, data, ptr);
+			CopyToCSTR(answer[acnt].RDATA, data, ptr);
 
 			//answer
+			/*
 			for (int i = 0; i < answer[acnt].RDATA.length(); i++)
 			{
 				raw_data.data[p_question] = answer[acnt].RDATA[i];
 				p_question++;
 			}
-			p_question++;
+			*/
+			ptr++;
 		}
 	}
 	//raw_data.data[p_question] = '\0';
-	raw_data.len = p_question;
+	raw_data.len = ptr;
 	//raw_data.len = raw_data.data.length();
 	return true;
 }
@@ -293,19 +275,19 @@ void DNSPacket::PrintPacket()
 {
 	printf("------------------Header------------------\n");
 	printf("ID:%X\n", header.ID);
-	printf("Flags:%X\n", header.Flags);
+	printf("Flags:%.4X\n", header.Flags);
 	printf("QR = %X, Opcode = %X, AA = %X, TC = %X, RD = %X\n",
 		(header.Flags & 0x8000) >> 15, (header.Flags & 0x7800) >> 11, (header.Flags & 0x0400) >> 10, (header.Flags & 0x0200) >> 9,
-		(header.Flags & 0x0100) >> 8);
+		   (header.Flags & 0x0100) >> 8);
 	printf("RA = %X, Z = %X, RCODE = %X\n",
 		(header.Flags & 0x0080) >> 7, (header.Flags & 0x0070) >> 4, (header.Flags & 0x000f));
 	printf("QDCOUNT = %d, ANCOUNT = %d, NSCOUNT = %d, ARCOUNT = %d\n",
-		header.QDCOUNT, header.ANCOUNT, header.NSCOUNT, header.ARCOUNT);
+		   header.QDCOUNT, header.ANCOUNT, header.NSCOUNT, header.ARCOUNT);
 
 	printf("-------------------Query------------------\n");
 	for (int qcnt = 0; qcnt < header.QDCOUNT; qcnt++)
 	{
-		printf("Query %d:\n", qcnt+1);
+		printf("Query %d:\n", qcnt + 1);
 		printf("QNAME = %s\n", query[qcnt].QNAME.c_str());
 		printf("QTYPE = %d, QCLASS = %d\n", query[qcnt].QTYPE, query[qcnt].QCLASS);
 		printf("\n");
@@ -316,7 +298,7 @@ void DNSPacket::PrintPacket()
 		printf("------------------Answer------------------\n");
 		for (int acnt = 0; acnt < header.ANCOUNT; acnt++)
 		{
-			printf("Answer %d:\n", acnt+1);
+			printf("Answer %d:\n", acnt + 1);
 			printf("NAME = %s\n", answer[acnt].NAME.c_str());
 			printf("TYPE = %d, CLASS = %d\n", answer[acnt].TYPE, answer[acnt].CLASS);
 			printf("TTL = %d\n", answer[acnt].TTL);
@@ -348,6 +330,6 @@ void DNSPacket::PrintRawData()
 
 void DNSPacket::DeleteAll()
 {
-	delete query;
-	delete answer;
+	delete[] query;
+	delete[] answer;
 }

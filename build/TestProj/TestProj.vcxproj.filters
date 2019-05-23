@@ -15,15 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\test\my_map_test.cc">
+    <ClCompile Include="..\..\src\include\dns_packet.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\include\my_map.cc">
+    <ClCompile Include="..\..\test\dns_packet_test.cc">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\include\my_map.h">
+    <ClInclude Include="..\..\src\include\dns_packet.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,19 +1,26 @@
-#include "dns_packet.h"
+#include "../src/include/dns_packet.h"
 int main()
 {
-	/*char a[256];
+	
+	char a[256];
 	a[0] = 0x00;
 	a[1] = 0x02;
+
 	a[2] = 0x81;
 	a[3] = 0x80;
+
 	a[4] = 0x00;
 	a[5] = 0x01;
+
 	a[6] = 0x00;
 	a[7] = 0x03;
+
 	a[8] = 0x00;
 	a[9] = 0x00;
+
 	a[10] = 0x00;
 	a[11] = 0x00;
+
 	a[12] = 0x03;
 	a[13] = 0x77;
 	a[14] = 0x77;
@@ -29,22 +36,30 @@ int main()
 	a[24] = 0x6f;
 	a[25] = 0x6d;
 	a[26] = 0x00;
+
 	a[27] = 0x00;
 	a[28] = 0x01;
+
 	a[29] = 0x00;
 	a[30] = 0x01;
+
 	a[31] = 0xc0;
 	a[32] = 0x0c;
+
 	a[33] = 0x00;
 	a[34] = 0x05;
+
 	a[35] = 0x00;
 	a[36] = 0x01;
+
 	a[37] = 0x00;
 	a[38] = 0x00;
 	a[39] = 0x00;
 	a[40] = 0x1c;
+
 	a[41] = 0x00;
 	a[42] = 0x0f;
+
 	a[43] = 0x03;
 	a[44] = 0x77;
 	a[45] = 0x77;
@@ -97,9 +112,11 @@ int main()
 	q.data = a;
 	DNSPacket p;
 	p.Parse(q);
-	p.print();
-	p.printraw();*/
+	p.PrintPacket();
+	p.PrintRawData();
+	
 
+	/*
 	DNSPacket p;
 	p.raw_data.data = new char[256]();
 	p.header.ID = 2;
@@ -112,8 +129,9 @@ int main()
 	p.query[0].QNAME = "www.baidu.com";
 	p.query[0].QTYPE = 1;
 	p.query[0].QCLASS = 1;
-	p.Packet();
-	p.print();
-	p.printraw();
+	p.to_packet();
+	p.PrintPacket();
+	p.PrintRawData();
 	return 0;
+	*/
 }

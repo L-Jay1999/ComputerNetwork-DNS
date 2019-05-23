@@ -57,10 +57,10 @@ public:
 	void PrintRawData();
 	void PrintPacket();
 
-	QueueData raw_data;
-	DNSHeader header;
-	DNSQuery *query;
-	DNSAnswer *answer;
+	QueueData raw_data = QueueData();
+	DNSHeader header = DNSHeader();
+	DNSQuery *query = nullptr;
+	DNSAnswer *answer = nullptr;
 private:
 	void DeleteAll();
 };
