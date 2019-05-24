@@ -70,6 +70,7 @@ public:
 
 	void CopyToCSTR(const std::string &str, char *buffer, int &ptr);
 
+
 	template<typename T>
 	void CopyToCSTR(const T val, char *buffer, int &ptr);
 };
