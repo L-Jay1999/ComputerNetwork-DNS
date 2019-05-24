@@ -37,7 +37,7 @@ void DNSSender::Start()
 
 void DNSSender::set_packet()
 {
-	QueueData temp_qdata = data_queue_->pop_front();	// 自动阻塞
+	QueueData temp_qdata = data_queue_->pop_front();
 	dns_packet_.Parse(temp_qdata);
 }
 
