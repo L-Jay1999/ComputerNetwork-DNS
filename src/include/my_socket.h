@@ -63,6 +63,6 @@ private:
 	unsigned max_msg_size_ = 0; // 用于发送数据时每个数据报文的最大大小
 	unsigned max_msg_size_len_ = sizeof(max_msg_size_);
 
-	std::size_t recv_len_ = 0;
+	int recv_len_ = 0;
     char recvbuf_[recvbuflen_];
 };
