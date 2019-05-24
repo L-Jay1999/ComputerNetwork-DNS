@@ -37,19 +37,19 @@ std::string HostList::get_ip_str(const std::string& host_name) const
 
 bool HostList::Load(const std::string &path)
 {
-	std::ifstream stream(host_path_);
+	std::ifstream stream(path);
 	if (stream)
 	{
 		host_path_ = path;
 		// log wirte std::cout << "open!" << std::endl;
-		std::string data[2];
+		std::string host_ip, host_name;
 		while (stream)
 		{
-			stream >> data[0];
-			stream >> data[1];
+			stream >> host_ip;
+			stream >> host_name;
 			//std::cout << data[0] << " " << data[1] << std::endl;
 			if (stream)
-				host_map_.insert(std::pair <std::string, std::string>(data[1], data[0]));
+				host_map_.insert({host_name, host_ip});
 		}
 		return true;
 	}

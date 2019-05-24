@@ -9,6 +9,7 @@ enum SocketType
 {
 	SEND_SOCKET = 0,
 	RECV_SOCKET,
+	QUEST_SOCKET,
 };
 
 struct QueueData;

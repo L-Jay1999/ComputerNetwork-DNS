@@ -1,22 +1,23 @@
 #pragma once
-#include "dns_packet.h"
-#include "my_socket.h"
-#include "job_queue.h"
 #include <deque>
 #include <mutex>
+
+#include "my_socket.h"
+
+class JobQueue;
 class DNSReceiver // 接收dns数据包并将其放到工作队列上
 {
 public:
-	DNSReceiver() = default;
+	DNSReceiver() = delete;
+	DNSReceiver(JobQueue *job_queue) : job_queue_(job_queue) {}
+	DNSReceiver(const DNSReceiver &other) = delete;
+	~DNSReceiver() = default;
+
 	void Start();
-	void set_queue(MyQueue* queue);
+	void set_queue(JobQueue *queue);
 
 private:
-	//DNSPacket dns_packet_;    // 保存dns数据包的详细信息
+	JobQueue *job_queue_ = nullptr;
 
-	//std::deque<QueueData> *jobq; // 保存收到的
-	MyQueue* jobq;
-
-	MySocket socRecv = MySocket(RECV_SOCKET); // 接收dns数据包
-					  // .......
+	MySocket sockRecv{RECV_SOCKET}; // 接收dns数据包
 };

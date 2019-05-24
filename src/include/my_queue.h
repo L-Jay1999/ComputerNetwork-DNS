@@ -17,8 +17,8 @@ public:
 	QueueData pop_front();
 
 private:
-	std::deque <QueueData> data_queue_;
+	std::deque<QueueData> data_queue_{};
 	std::mutex mutex_;
 	std::condition_variable cond_;
-	int size_;
+	int size_ = 0;
 };

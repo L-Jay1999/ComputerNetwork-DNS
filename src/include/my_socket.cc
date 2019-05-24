@@ -85,7 +85,15 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port)
 	hint.ai_protocol = IPPROTO_UDP;
 	hint.ai_flags = AI_PASSIVE;
 
-	last_error_ = getaddrinfo(NULL, port, &hint, &result);
+	if (soc_type == QUEST_SOCKET)
+	{
+		last_error_ = getaddrinfo(NULL, port, &hint, &result);
+	}
+	else
+	{
+		last_error_ = getaddrinfo("localhost", port, &hint, &result);
+	}
+
 	if (last_error_)
 	{
 		// log write
@@ -103,26 +111,49 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port)
 		return last_error_;
 	}
 
+	DWORD is_reuseaddr = FALSE;
+	if (setsockopt(sock_, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, reinterpret_cast<const char *>(&is_reuseaddr), sizeof(is_reuseaddr) == SOCKET_ERROR))
+	{
+		last_error_ = WSAGetLastError();
+		closesocket(sock_);
+		freeaddrinfo(result);
+		WSACleanup();
+		// log write
+		return last_error_;
+	}
+
+	is_reuseaddr = TRUE;
+	if (setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&is_reuseaddr), sizeof(is_reuseaddr) == SOCKET_ERROR))
+	{
+		last_error_ = WSAGetLastError();
+		closesocket(sock_);
+		freeaddrinfo(result);
+		WSACleanup();
+		// log write
+		return last_error_;
+	}
+
+	last_error_ = bind(sock_, result->ai_addr, static_cast<int>(result->ai_addrlen));
+	if (last_error_ == SOCKET_ERROR)
+	{
+		// log write
+		last_error_ = WSAGetLastError();
+		freeaddrinfo(result);
+		WSACleanup();
+		return last_error_;
+	}
+
+	my_addr_info_size_ = sizeof(my_addr_info_);
+	last_error_ = getsockname(sock_, reinterpret_cast<sockaddr *>(&my_addr_info_), &my_addr_info_size_);
+	if (last_error_)
+	{
+		freeaddrinfo(result);
+		WSACleanup();
+		return last_error_;
+	}
+
 	if (soc_type == RECV_SOCKET)
 	{
-		last_error_ = bind(sock_, result->ai_addr, static_cast<int>(result->ai_addrlen));
-		if (last_error_ == SOCKET_ERROR)
-		{
-			// log write
-			freeaddrinfo(result);
-			WSACleanup();
-			return last_error_;
-		}
-
-		my_addr_info_size_ = sizeof(my_addr_info_);
-		last_error_ = getsockname(sock_, reinterpret_cast<sockaddr *>(&my_addr_info_), &my_addr_info_size_);
-		if (last_error_)
-		{
-			freeaddrinfo(result);
-			WSACleanup();
-			return last_error_;
-		}
-
 		freeaddrinfo(result);
 	}
 	else
@@ -144,6 +175,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port)
 			WSACleanup();
 			return last_error_;
 		}
+
 		sockaddr_in *temp = reinterpret_cast<sockaddr_in *>(result->ai_addr);
 		superior_server_addr_ = *temp;
 
@@ -172,13 +204,7 @@ DWORD MySocket::_RecvFrom(QueueData &queue_data)
 		{
 			queue_data.addr = from_;
 			queue_data.len = recv_len_;
-			queue_data.data = new char[recv_len_]();
-			if (queue_data.data == nullptr)
-			{
-				// log write cannot allocate memory for queue_data
-			}
-			else
-				std::memcpy(queue_data.data, recvbuf_, recv_len_);
+			std::memcpy(queue_data.data, recvbuf_, recv_len_);
 			break;
 		}
 	}
@@ -203,15 +229,12 @@ DWORD MySocket::_SendTo(const QueueData &queue_data)
 
 QueueData MySocket::RecvFrom()
 {
-	if (sock_type_ == RECV_SOCKET)
+	if (sock_type_ == RECV_SOCKET || sock_type_ == QUEST_SOCKET)
 	{
-		QueueData res;
+		QueueData res = QueueData();
 		last_error_ = _RecvFrom(res);
 		if (last_error_ != ERROR_SUCCESS)
 		{
-			// log write
-			if (res.data)
-				delete res.data;
 			res = QueueData();
 		}
 
@@ -226,7 +249,7 @@ QueueData MySocket::RecvFrom()
 
 bool MySocket::SendTo(const QueueData &queue_data)
 {
-	if (sock_type_ == SEND_SOCKET)
+	if (sock_type_ == SEND_SOCKET || sock_type_ == QUEST_SOCKET)
 	{
 		last_error_ = _SendTo(queue_data);
 
@@ -245,13 +268,3 @@ bool MySocket::SendTo(const QueueData &queue_data)
 	}
 }
 
-int get_send_port_random()
-{
-	static constexpr int kSendPortLowerBound = 10000;
-	static constexpr int kSendPortUpperBound = 20000;
-
-	static std::mt19937 g;
-	static std::uniform_int_distribution<int> uid(kSendPortLowerBound, kSendPortUpperBound);
-
-	return uid(g);
-}

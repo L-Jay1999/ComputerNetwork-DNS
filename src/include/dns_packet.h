@@ -2,6 +2,9 @@
 #include <string>
 #include <iostream>
 #include <cstdio>
+#include <memory>
+#include <utility>
+
 #include <WinSock2.h>
 #pragma comment(lib, "Ws2_32.lib")
 // DNSHeader
@@ -39,13 +42,15 @@ struct DNSAnswer
 struct QueueData
 {
 	int len;
-	char *data;
+	char data[1024];
 	//std::string data;
 	sockaddr_in addr;
 };
 
 struct DNSPacket
 {
+private:
+	
 public:
 	DNSPacket() = default;
 	DNSPacket(const DNSPacket &other) = delete;
@@ -57,10 +62,14 @@ public:
 	void PrintRawData();
 	void PrintPacket();
 
-	QueueData raw_data = QueueData();
-	DNSHeader header = DNSHeader();
-	DNSQuery *query = nullptr;
-	DNSAnswer *answer = nullptr;
-private:
-	void DeleteAll();
+	sockaddr_in from{};
+	QueueData raw_data{};
+	DNSHeader header{};
+	std::unique_ptr<DNSQuery[]> query;
+	std::unique_ptr<DNSAnswer[]> answer;
+
+	void CopyToCSTR(const std::string &str, char *buffer, int &ptr);
+
+	template<typename T>
+	void CopyToCSTR(const T val, char *buffer, int &ptr);
 };
