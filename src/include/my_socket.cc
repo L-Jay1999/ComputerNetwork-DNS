@@ -10,12 +10,13 @@
 #include "log.h"
 
 static const char *kDefaultDNSPort = "53";
-static const char *kSuperiorDNSServerAddr = "10.3.9.4";
+
 
 static int get_send_port_random();
 
-MySocket::MySocket(SocketType sock_type) : sock_type_(sock_type)
+MySocket::MySocket(SocketType sock_type, const std::string& address) : sock_type_(sock_type)
 {
+	kSuperiorDNSServerAddr = address.c_str();
 	if (InitSock(sock_type_, kDefaultDNSPort) == ERROR_SUCCESS)
 	{
 		init_success_ = true;
@@ -28,8 +29,9 @@ MySocket::MySocket(SocketType sock_type) : sock_type_(sock_type)
 	}
 }
 
-MySocket::MySocket(SocketType sock_type, const char *port) : sock_type_(sock_type)
+MySocket::MySocket(SocketType sock_type, const char *port, const std::string& address) : sock_type_(sock_type)
 {
+	kSuperiorDNSServerAddr = address.c_str();
 	if (InitSock(sock_type_, port) == ERROR_SUCCESS)
 	{
 		init_success_ = true;

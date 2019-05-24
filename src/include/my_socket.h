@@ -18,8 +18,8 @@ class MySocket
 {
 public:
     MySocket() = delete;
-	MySocket(SocketType sock_type);
-	MySocket(SocketType sock_type, const char *port);
+	MySocket(SocketType sock_type, const std::string& address = "10.3.9.5");
+	MySocket(SocketType sock_type, const char *port, const std::string& address = "10.3.9.5");
 	MySocket(const MySocket &soc) = delete;
 	MySocket &operator=(const MySocket &soc) = delete;
 	~MySocket();
@@ -41,7 +41,7 @@ public:
 
 private:
 	static constexpr int recvbuflen_ = 512;
-	
+	const char* kSuperiorDNSServerAddr;
 
 	DWORD InitSock(SocketType soc_type, const char *port);
 
