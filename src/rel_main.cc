@@ -21,15 +21,34 @@ void sender_t(JobQueue *job_queue, HostList *host_list, MyMap *my_map)
 	sender.Start();
 }
 
-void sender_t(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string &addr)
+int checkparameters(const int argc, const char* argv[])
 {
-	DNSSender sender(job_queue, host_list, my_map, addr);
-	sender.Start();
+	if (argc != 1)
+	{
+		for (int i = 1; i < argc; i++)
+		{
+			std::string parameter(argv[i]);
+			if (parameter == "-d")
+			{
+
+			}
+			else if (parameter == "-dd")
+			{
+
+			}
+			else
+			{
+
+			}
+		}
+	}
 }
 
-int main(const int argc, const char *argv[])
+
+int main(const int argc, const char* argv[])
 {
-	HostList host_list;
+	checkparameters(argc, argv);
+	HostList host_list();
 	JobQueue job_queue;
 	MyMap my_map;
 

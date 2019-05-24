@@ -2,6 +2,7 @@
 #include <memory>
 #include <utility>
 #include <random>
+#include <iostream>
 
 #include "my_queue.h"
 #include "dns_packet.h"
@@ -20,8 +21,8 @@ static int get_quest_port_random()
 }
 
 
-DNSSender::DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string &address)
-	: job_queue_(job_queue), host_list_(host_list), my_map_(my_map), address_(address)
+DNSSender::DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map)
+	: job_queue_(job_queue), host_list_(host_list), my_map_(my_map)
 {
 	job_queue_->Bind(this);
 }
