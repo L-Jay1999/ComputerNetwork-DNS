@@ -59,3 +59,4 @@ build/x64
 *.log
 build/TestProj/x64/Debug/TestProj.vcxproj.FileListAbsolute.txt
 test/test_map
+build/TestProj/x64

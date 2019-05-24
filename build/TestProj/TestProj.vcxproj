@@ -19,11 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\include\my_map.cc" />
-    <ClCompile Include="..\..\test\my_map_test.cc" />
+    <ClCompile Include="..\..\src\include\dns_packet.cc" />
+    <ClCompile Include="..\..\test\dns_packet_test.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\include\my_map.h" />
+    <ClInclude Include="..\..\src\include\dns_packet.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
