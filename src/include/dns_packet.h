@@ -42,7 +42,7 @@ struct DNSAnswer
 struct QueueData
 {
 	int len;
-	char *data;
+	char data[1024];
 	//std::string data;
 	sockaddr_in addr;
 };
@@ -62,9 +62,9 @@ public:
 	void PrintRawData();
 	void PrintPacket();
 
-	sockaddr_in from;
-	QueueData raw_data = QueueData();
-	DNSHeader header = DNSHeader();
+	sockaddr_in from{};
+	QueueData raw_data{};
+	DNSHeader header{};
 	std::unique_ptr<DNSQuery[]> query;
 	std::unique_ptr<DNSAnswer[]> answer;
 

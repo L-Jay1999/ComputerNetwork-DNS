@@ -33,10 +33,10 @@ void DNSPacket::CopyToCSTR(const std::string &str, char *buffer, int &ptr)
 }
 
 template<typename T>
-static void ReadFromCSTR(T &dest, char *src, int &ptr)
+static void ReadFromCSTR(T &dest, const  char *src, int &ptr)
 {
 	char temp_HE[12];
-	char *p_char = (src + ptr);
+	char *p_char = const_cast<char *>(src + ptr);
 
 	for (int i = sizeof(T) - 1; i >= 0; i--)
 	{
@@ -49,13 +49,13 @@ static void ReadFromCSTR(T &dest, char *src, int &ptr)
 	ptr += sizeof(T);
 }
 
-static void ReadFromCSTR(char *dest, const unsigned len, char *src, int &ptr)
+static void ReadFromCSTR(char *dest, const unsigned len, const char *src, int &ptr)
 {
 	for (unsigned i = 0; i < len; i++)
 		ReadFromCSTR(dest[i], src, ptr);
 }
 
-static void ReadFromCSTR(std::string &dest, const unsigned len, char *src, int &ptr)
+static void ReadFromCSTR(std::string &dest, const unsigned len, const char *src, int &ptr)
 {
 	for (unsigned i = 0; i < len; i++)
 		dest.push_back(src[ptr++]);
@@ -103,7 +103,7 @@ DNSPacket::~DNSPacket()
 bool DNSPacket::Parse(const QueueData &raw_packet)
 {
 	raw_data = raw_packet;
-	char *packet = raw_packet.data;
+	const char *packet = raw_packet.data;
 	int ptr = 0;
 
 	//char packet[256];

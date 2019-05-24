@@ -36,9 +36,6 @@
     <ClCompile Include="..\..\src\include\dns_packet.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\test\dns_packet_test.cc">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\rel_main.cc">
       <Filter>源文件</Filter>
     </ClCompile>

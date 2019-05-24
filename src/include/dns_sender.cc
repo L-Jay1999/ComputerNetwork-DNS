@@ -1,13 +1,27 @@
 #include <string>
 #include <memory>
 #include <utility>
+#include <random>
+
 #include "my_queue.h"
 #include "dns_packet.h"
 #include "job_queue.h"
 #include "dns_sender.h"
 
-DNSSender::DNSSender(JobQueue *job_queue, HostList *host_list, const std::string &address)
-	: job_queue_(job_queue), host_list_(host_list), address_(address)
+static int get_quest_port_random()
+{
+	static constexpr int kSendPortLowerBound = 10000;
+	static constexpr int kSendPortUpperBound = 40000;
+
+	static std::random_device rd;
+	static std::uniform_int_distribution<int> uid(kSendPortLowerBound, kSendPortUpperBound);
+
+	return uid(rd);
+}
+
+
+DNSSender::DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string &address)
+	: job_queue_(job_queue), host_list_(host_list), my_map_(my_map), address_(address)
 {
 	job_queue_->Bind(this);
 }
@@ -18,7 +32,6 @@ void DNSSender::Start()
 	{
 		set_packet();
 		Responce();
-		delete[] dns_packet_.raw_data.data;
 	}
 }
 
@@ -35,40 +48,49 @@ void DNSSender::set_queue(MyQueue *data_queue)
 
 void DNSSender::Responce()
 {
-	if (dns_packet_.header.Flags >> 15 == 0)
+
+	for (int query_cnt = 0; query_cnt < dns_packet_.header.QDCOUNT; query_cnt++)
 	{
-		for (int query_cnt = 0; query_cnt < dns_packet_.header.QDCOUNT; query_cnt++)
+		HostState state = host_list_->get_host_state(dns_packet_.query[query_cnt].QNAME);
+		if (state == FIND)
 		{
-			HostState state = host_list_->get_host_state(dns_packet_.query[query_cnt].QNAME);
-			if (state == FIND)
-			{
-				set_reply(host_list_->get_ip_str(dns_packet_.query[query_cnt].QNAME));
-				send_to_client();
-			}
-			else if (state == BANNED)
-			{
-				set_reply("0.0.0.0");
-				send_to_client();
-			}
-			else
-			{
-				my_map_->insert(dns_packet_.header.ID, dns_packet_.raw_data.addr);
-				send_to_DNS();
-			}
+			set_reply(host_list_->get_ip_str(dns_packet_.query[query_cnt].QNAME));
+			send_to_client();
 		}
-	}
-	else
-	{
-		if (my_map_->find(dns_packet_.header.ID))
+		else if (state == BANNED)
 		{
-			auto temp = my_map_->get(dns_packet_.header.ID);
-			my_map_->erase(dns_packet_.header.ID);
-			send_to_client(temp);
+			set_reply("0.0.0.0");
+			send_to_client();
 		}
 		else
 		{
-			//有错
-			return;
+			sockaddr_in temp = dns_packet_.raw_data.addr;
+			std::string temp_port = std::to_string(get_quest_port_random());
+
+			MySocket quest_sock(QUEST_SOCKET, temp_port.c_str());
+			dns_packet_.raw_data.addr = sockSend_.get_superior_server();
+			if (quest_sock.SendTo(dns_packet_.raw_data))
+			{
+				//log
+
+			}
+			else
+			{
+				//log
+			}
+
+			auto temp_packet = quest_sock.RecvFrom();
+			temp_packet.addr = temp;
+			if (sockSend_.SendTo(temp_packet))
+			{
+				//log
+
+			}
+			else
+			{
+				//log
+			}
+
 		}
 	}
 }
@@ -117,20 +139,6 @@ void DNSSender::send_to_client()
 void DNSSender::send_to_client(const sockaddr_in &addr)
 {
 	dns_packet_.raw_data.addr = addr;
-	if (sockSend_.SendTo(dns_packet_.raw_data))
-	{
-		//log
-
-	}
-	else
-	{
-		//log
-	}
-}
-
-void DNSSender::send_to_DNS()
-{
-	dns_packet_.raw_data.addr = sockSend_.get_superior_server();
 	if (sockSend_.SendTo(dns_packet_.raw_data))
 	{
 		//log

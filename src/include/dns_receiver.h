@@ -19,6 +19,5 @@ public:
 private:
 	JobQueue *job_queue_ = nullptr;
 
-	MySocket sockRecv = MySocket(RECV_SOCKET); // 接收dns数据包
-					  // .......
+	MySocket sockRecv{RECV_SOCKET}; // 接收dns数据包
 };

@@ -18,7 +18,7 @@ class DNSSender
 {
 public:
 	DNSSender() = delete;
-	explicit DNSSender(JobQueue *job_queue, HostList *host_list, const std::string &address = "10.3.9.5");
+	explicit DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map,const std::string &address = "10.3.9.5");
 	DNSSender(const DNSSender *other) = delete;
 	~DNSSender() = default;
 
@@ -36,7 +36,7 @@ private:
 	MyQueue *data_queue_ = nullptr; // 从该队列中取出数据并处理发送
 	HostList *host_list_ = nullptr;
 
-	MySocket sockSend_ = MySocket(SEND_SOCKET);	 // 发送
+	MySocket sockSend_{SEND_SOCKET};	 // 发送
 
 	std::string address_; // 上级dns服务器地址
 	MyMap *my_map_ = nullptr;
@@ -45,5 +45,4 @@ private:
 	void set_reply(const std::string &ip);
 	void send_to_client();
 	void send_to_client(const sockaddr_in &addr);
-	void send_to_DNS();
 };

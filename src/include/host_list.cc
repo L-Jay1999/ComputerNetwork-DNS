@@ -37,7 +37,7 @@ std::string HostList::get_ip_str(const std::string& host_name) const
 
 bool HostList::Load(const std::string &path)
 {
-	std::ifstream stream(host_path_);
+	std::ifstream stream(path);
 	if (stream)
 	{
 		host_path_ = path;
