@@ -35,13 +35,13 @@ int main(const int argc, const char *argv[])
 
 	std::thread	r(recv_t, &job_queue);
 	Sleep(100);
-	void (*so)(JobQueue *, HostList *, MyMap *) = sender_t;
+	void (*so)(JobQueue *, HostList *, MyMap *, const std::string &) = sender_t;
 	
 	constexpr int sender_num = 4;
 	std::vector<std::thread> sender_vec;
 	for (int i = 0; i < sender_num; i++)
 	{
-		sender_vec.push_back(std::thread(so, &job_queue, &host_list, &my_map));
+		sender_vec.push_back(std::thread(so, &job_queue, &host_list, &my_map, "114.114.114.114"));
 		Sleep(100);
 	}
 	

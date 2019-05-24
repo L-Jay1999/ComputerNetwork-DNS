@@ -21,7 +21,7 @@ static int get_quest_port_random()
 
 
 DNSSender::DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string &address)
-	: job_queue_(job_queue), host_list_(host_list), my_map_(my_map), address_(address)
+	: job_queue_(job_queue), host_list_(host_list), my_map_(my_map), address_(address), sockSend_(SEND_SOCKET, "53", address)
 {
 	job_queue_->Bind(this);
 }
@@ -67,7 +67,7 @@ void DNSSender::Responce()
 			sockaddr_in temp = dns_packet_.raw_data.addr;
 			std::string temp_port = std::to_string(get_quest_port_random());
 
-			MySocket quest_sock(QUEST_SOCKET, temp_port.c_str());
+			MySocket quest_sock(QUEST_SOCKET, temp_port.c_str(), address_);
 			dns_packet_.raw_data.addr = sockSend_.get_superior_server();
 			if (quest_sock.SendTo(dns_packet_.raw_data))
 			{
