@@ -42,6 +42,9 @@
     <ClCompile Include="..\..\src\include\my_map.cc">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\include\log.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\include\my_queue.h">

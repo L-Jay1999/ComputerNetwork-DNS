@@ -84,7 +84,6 @@ void DNSSender::Responce()
 			if (sockSend_.SendTo(temp_packet))
 			{
 				//log
-
 			}
 			else
 			{
