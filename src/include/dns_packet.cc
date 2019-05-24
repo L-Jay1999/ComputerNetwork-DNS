@@ -3,11 +3,13 @@
 #include <vector>
 #include <iostream>
 #include <cstdio>
+#include <memory>
+#include <utility>
 
 #include "dns_packet.h"
 
 template<typename T>
-static void CopyToCSTR(const T val, char *buffer, int &ptr)
+void DNSPacket::CopyToCSTR(const T val, char *buffer, int &ptr)
 {
 	char temp_LE[12];
 	const char *p_char = reinterpret_cast<const char *>(&val);
@@ -24,7 +26,7 @@ static void CopyToCSTR(const T val, char *buffer, int &ptr)
 	ptr += sizeof(T);
 }
 
-static void CopyToCSTR(const std::string &str, char *buffer, int &ptr)
+void DNSPacket::CopyToCSTR(const std::string &str, char *buffer, int &ptr)
 {
 	for (const auto c : str)
 		CopyToCSTR(c, buffer, ptr);
@@ -96,7 +98,6 @@ static unsigned short inttos(unsigned int &x)
 
 DNSPacket::~DNSPacket()
 {
-	DeleteAll();
 }
 
 bool DNSPacket::Parse(const QueueData &raw_packet)
@@ -115,7 +116,7 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 	}*/
 
 	int packet_len = raw_packet.len;
-	sockaddr_in packet_addr = raw_packet.addr;
+	from = raw_packet.addr;
 
 	ReadFromCSTR(header.ID, packet, ptr);
 	ReadFromCSTR(header.Flags, packet, ptr);
@@ -125,7 +126,8 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 	ReadFromCSTR(header.ARCOUNT, packet, ptr);
 
 	// query
-	query = new DNSQuery[header.QDCOUNT];
+
+	query = std::make_unique<DNSQuery[]>(header.QDCOUNT);
 	// int p_question = 12;
 	unsigned char char_num;
 	for (int query_cnt = 0; query_cnt < header.QDCOUNT; query_cnt++)
@@ -135,7 +137,7 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 			ReadFromCSTR(char_num, packet, ptr);
 			if (char_num == 0)
 				break;
-			ReadFromCSTR(query->QNAME, char_num, packet, ptr);
+			ReadFromCSTR(query[query_cnt].QNAME, char_num, packet, ptr);
 			query[query_cnt].QNAME.push_back('.');
 		}
 		query[query_cnt].QNAME.pop_back();
@@ -147,8 +149,8 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 	//answer
 	if (header.Flags >> 15)
 	{
-		answer = new DNSAnswer[header.ANCOUNT];
-		for (int acnt = 0; acnt < header.ANCOUNT; acnt++)
+		answer = std::make_unique<DNSAnswer[]>(header.ANCOUNT);
+		for (int answer_cnt = 0; answer_cnt < header.ANCOUNT; answer_cnt++)
 		{
 			if ((unsigned char)packet[ptr] == 0xc0)
 			{
@@ -159,10 +161,10 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 					ReadFromCSTR(char_num, packet, ptr);
 					if (char_num == 0)
 						break;
-					ReadFromCSTR(answer[acnt].NAME, char_num, packet, ptr);
-					answer[acnt].NAME.push_back('.');
+					ReadFromCSTR(answer[answer_cnt].NAME, char_num, packet, ptr);
+					answer[answer_cnt].NAME.push_back('.');
 				}
-				answer[acnt].NAME.pop_back();
+				answer[answer_cnt].NAME.pop_back();
 				ptr = ptr_temp;
 				ptr += sizeof(unsigned short);
 			}
@@ -170,11 +172,11 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 			{
 				std::cout << "warning" << std::endl;
 			}
-			ReadFromCSTR(answer[acnt].TYPE, packet, ptr);
-			ReadFromCSTR(answer[acnt].CLASS, packet, ptr);
-			ReadFromCSTR(answer[acnt].TTL, packet, ptr);
-			ReadFromCSTR(answer[acnt].RDLENGTH, packet, ptr);
-			ReadFromCSTR(answer[acnt].RDATA, answer[acnt].RDLENGTH, packet, ptr);
+			ReadFromCSTR(answer[answer_cnt].TYPE, packet, ptr);
+			ReadFromCSTR(answer[answer_cnt].CLASS, packet, ptr);
+			ReadFromCSTR(answer[answer_cnt].TTL, packet, ptr);
+			ReadFromCSTR(answer[answer_cnt].RDLENGTH, packet, ptr);
+			ReadFromCSTR(answer[answer_cnt].RDATA, answer[answer_cnt].RDLENGTH, packet, ptr);
 		}
 	}
 	return true;
@@ -256,9 +258,9 @@ bool DNSPacket::to_packet()
 
 			//answer
 			/*
-			for (int i = 0; i < answer[acnt].RDATA.length(); i++)
+			for (int i = 0; i < answer[answer_cnt].RDATA.length(); i++)
 			{
-				raw_data.data[p_question] = answer[acnt].RDATA[i];
+				raw_data.data[p_question] = answer[answer_cnt].RDATA[i];
 				p_question++;
 			}
 			*/
@@ -266,6 +268,7 @@ bool DNSPacket::to_packet()
 		}
 	}
 	//raw_data.data[p_question] = '\0';
+	raw_data.addr = from;
 	raw_data.len = ptr;
 	//raw_data.len = raw_data.data.length();
 	return true;
@@ -326,10 +329,4 @@ void DNSPacket::PrintRawData()
 		printf("%c%X ", "0\a"[temp <= 0xf ? 0 : 1], temp);
 		if (i % 8 == 7)printf("\n");
 	}
-}
-
-void DNSPacket::DeleteAll()
-{
-	delete[] query;
-	delete[] answer;
 }

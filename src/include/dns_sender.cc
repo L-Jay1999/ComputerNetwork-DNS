@@ -1,11 +1,15 @@
-
+#include <string>
+#include <memory>
+#include <utility>
 #include "my_queue.h"
 #include "dns_packet.h"
+#include "job_queue.h"
 #include "dns_sender.h"
 
-DNSSender::DNSSender(const std::string &address)
+DNSSender::DNSSender(JobQueue *job_queue, HostList *host_list, const std::string &address)
+	: job_queue_(job_queue), host_list_(host_list), address_(address)
 {
-	this->address = address;
+	job_queue_->Bind(this);
 }
 
 void DNSSender::Start()
@@ -14,35 +18,31 @@ void DNSSender::Start()
 	{
 		set_packet();
 		Responce();
+		delete[] dns_packet_.raw_data.data;
 	}
 }
 
 void DNSSender::set_packet()
 {
-	QueueData temp_qdata = jobq->pop_front();	// 自动阻塞
+	QueueData temp_qdata = data_queue_->pop_front();	// 自动阻塞
 	dns_packet_.Parse(temp_qdata);
 }
 
-void DNSSender::set_queue(MyQueue *queue)
+void DNSSender::set_queue(MyQueue *data_queue)
 {
-	jobq = queue;
-}
-
-void DNSSender::set_map(MyMap* mymap)
-{
-	my_map_ = mymap;
+	data_queue_ = data_queue;
 }
 
 void DNSSender::Responce()
 {
 	if (dns_packet_.header.Flags >> 15 == 0)
 	{
-		for (int qcnt = 0; qcnt < dns_packet_.header.QDCOUNT; qcnt++)
+		for (int query_cnt = 0; query_cnt < dns_packet_.header.QDCOUNT; query_cnt++)
 		{
-			HostState state = host_list_->get_host_state(dns_packet_.query[qcnt].QNAME);
+			HostState state = host_list_->get_host_state(dns_packet_.query[query_cnt].QNAME);
 			if (state == FIND)
 			{
-				set_reply(host_list_->get_ip_str(dns_packet_.query[qcnt].QNAME));
+				set_reply(host_list_->get_ip_str(dns_packet_.query[query_cnt].QNAME));
 				send_to_client();
 			}
 			else if (state == BANNED)
@@ -68,40 +68,42 @@ void DNSSender::Responce()
 		else
 		{
 			//有错
+			return;
 		}
 	}
 }
 
-void DNSSender::set_reply(std::string ip)
+void DNSSender::set_reply(const std::string &ip)
 {
 	dns_packet_.header.Flags = 0x8180;
 	dns_packet_.header.ANCOUNT = 1;
 
-	dns_packet_.answer = new DNSAnswer;
-	//dns_packet_.answer->NAME = name;
-	dns_packet_.answer->TYPE = 1;
-	dns_packet_.answer->CLASS = 1;
-	dns_packet_.answer->TTL = 168;
-	dns_packet_.answer->RDLENGTH = 4;
+	dns_packet_.answer = std::make_unique<DNSAnswer[]>(1);
+	// dns_packet_.answer->NAME = name;
+	dns_packet_.answer[0].TYPE = 1;
+	dns_packet_.answer[0].CLASS = 1;
+	dns_packet_.answer[0].TTL = 168;
+	dns_packet_.answer[0].RDLENGTH = 4;
 
 	std::string temp;
+
 	for (int i = 0; i < ip.length(); i++)
 	{
 		if (ip[i] == '.')
 		{
-			dns_packet_.answer->RDATA.push_back(static_cast<unsigned char>(std::stoi(temp)));
+			dns_packet_.answer[0].RDATA.push_back(static_cast<unsigned char>(std::stoi(temp)));
 			temp.clear();
 		}
 		else temp.push_back(ip[i]);
 	}
-	dns_packet_.answer->RDATA.push_back(static_cast<unsigned char>(std::stoi(temp)));
+	dns_packet_.answer[0].RDATA.push_back(static_cast<unsigned char>(std::stoi(temp)));
 	temp.clear();
 	dns_packet_.to_packet();
 }
 
 void DNSSender::send_to_client()
 {
-	if (socSend.SendTo(dns_packet_.raw_data))
+	if (sockSend_.SendTo(dns_packet_.raw_data))
 	{
 		//log
 
@@ -112,10 +114,10 @@ void DNSSender::send_to_client()
 	}
 }
 
-void DNSSender::send_to_client(sockaddr_in addr)
+void DNSSender::send_to_client(const sockaddr_in &addr)
 {
 	dns_packet_.raw_data.addr = addr;
-	if (socSend.SendTo(dns_packet_.raw_data))
+	if (sockSend_.SendTo(dns_packet_.raw_data))
 	{
 		//log
 
@@ -128,8 +130,8 @@ void DNSSender::send_to_client(sockaddr_in addr)
 
 void DNSSender::send_to_DNS()
 {
-	dns_packet_.raw_data.addr = socSend.get_superior_server();
-	if (socSend.SendTo(dns_packet_.raw_data))
+	dns_packet_.raw_data.addr = sockSend_.get_superior_server();
+	if (sockSend_.SendTo(dns_packet_.raw_data))
 	{
 		//log
 
