@@ -18,8 +18,8 @@ class MySocket
 {
 public:
     MySocket() = delete;
-	MySocket(SocketType sock_type, const std::string& address = "10.3.9.5");
-	MySocket(SocketType sock_type, const char *port, const std::string& address = "10.3.9.5");
+	MySocket(SocketType sock_type);
+	MySocket(SocketType sock_type, const char *port, const std::string &superior_dns);
 	MySocket(const MySocket &soc) = delete;
 	MySocket &operator=(const MySocket &soc) = delete;
 	~MySocket();
@@ -43,7 +43,7 @@ private:
 	static constexpr int recvbuflen_ = 512;
 	const char* kSuperiorDNSServerAddr;
 
-	DWORD InitSock(SocketType soc_type, const char *port);
+	DWORD InitSock(SocketType soc_type, const char *port, const std::string &superior_dns);
 
 	// 从指定端口接收数据,对传入的空QueueData初始化,返回错误信息
 	DWORD _RecvFrom(QueueData &queue_data);	

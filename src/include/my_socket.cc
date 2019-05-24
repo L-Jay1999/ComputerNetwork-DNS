@@ -10,14 +10,13 @@
 #include "log.h"
 
 static const char *kDefaultDNSPort = "53";
-
+static const std::string kSuperiorDNSServerAddr = "10.3.9.4";
 
 static int get_send_port_random();
 
 MySocket::MySocket(SocketType sock_type, const std::string& address) : sock_type_(sock_type)
 {
-	kSuperiorDNSServerAddr = address.c_str();
-	if (InitSock(sock_type_, kDefaultDNSPort) == ERROR_SUCCESS)
+	if (InitSock(sock_type_, kDefaultDNSPort, kSuperiorDNSServerAddr) == ERROR_SUCCESS)
 	{
 		init_success_ = true;
 		// log write
@@ -29,10 +28,9 @@ MySocket::MySocket(SocketType sock_type, const std::string& address) : sock_type
 	}
 }
 
-MySocket::MySocket(SocketType sock_type, const char *port, const std::string& address) : sock_type_(sock_type)
+MySocket::MySocket(SocketType sock_type, const char *port, const std::string &superior_dns) : sock_type_(sock_type)
 {
-	kSuperiorDNSServerAddr = address.c_str();
-	if (InitSock(sock_type_, port) == ERROR_SUCCESS)
+	if (InitSock(sock_type_, port, superior_dns) == ERROR_SUCCESS)
 	{
 		init_success_ = true;
 		// log write
@@ -66,7 +64,7 @@ MySocket::~MySocket()
 	}
 }
 
-DWORD MySocket::InitSock(SocketType soc_type, const char *port)
+DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::string &superior_dns)
 {
 	WSADATA wsaData;
 	int last_error_;
@@ -171,7 +169,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port)
 		}
 
 		freeaddrinfo(result);
-		last_error_ = getaddrinfo(kSuperiorDNSServerAddr, kDefaultDNSPort, &hint, &result);
+		last_error_ = getaddrinfo(superior_dns.c_str(), kDefaultDNSPort, &hint, &result);
 		if (last_error_)
 		{
 			WSACleanup();
