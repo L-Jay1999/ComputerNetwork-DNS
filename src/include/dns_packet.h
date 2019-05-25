@@ -50,7 +50,7 @@ struct QueueData
 struct DNSPacket
 {
 private:
-	
+
 public:
 	DNSPacket() = default;
 	DNSPacket(const DNSPacket &other) = delete;
@@ -69,7 +69,6 @@ public:
 	std::unique_ptr<DNSAnswer[]> answer;
 
 	void CopyToCSTR(const std::string &str, char *buffer, int &ptr);
-
 
 	template<typename T>
 	void CopyToCSTR(const T val, char *buffer, int &ptr);

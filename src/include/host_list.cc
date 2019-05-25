@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "host_list.h"
+#include "log.h"
 
 const std::string HostList::banned_host_ = "0.0.0.0";
 
@@ -10,15 +11,15 @@ HostList::HostList(const std::string &path)
 {
 	if (Load(path))
 	{
-		// log write
+		Log::WriteLog(1, __s("host list loading succeed"));
 	}
 	else
 	{
-		// log write
+		Log::WriteLog(1, __s("host list loading failed"));
 	}
 }
 
-HostState HostList::get_host_state(const std::string& host_name) const
+HostState HostList::get_host_state(const std::string &host_name) const
 {
 	auto iter = host_map_.find(host_name);
 
@@ -26,11 +27,11 @@ HostState HostList::get_host_state(const std::string& host_name) const
 		return NOT_FIND;
 	else if (iter->second == banned_host_)
 		return BANNED;
-	else 
+	else
 		return FIND;
 }
 
-std::string HostList::get_ip_str(const std::string& host_name) const
+std::string HostList::get_ip_str(const std::string &host_name) const
 {
 	return host_map_.at(host_name);
 }
@@ -41,7 +42,6 @@ bool HostList::Load(const std::string &path)
 	if (stream)
 	{
 		host_path_ = path;
-		// log wirte std::cout << "open!" << std::endl;
 		std::string host_ip, host_name;
 		while (stream)
 		{
@@ -55,6 +55,7 @@ bool HostList::Load(const std::string &path)
 	}
 	else
 	{
+		Log::WriteLog(1, __s(" host list cannot open host file: ") + path);
 		// log write std::cout << "open error!" << std::endl;
 		return false;
 	}

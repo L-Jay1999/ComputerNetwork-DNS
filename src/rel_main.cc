@@ -13,23 +13,21 @@
 
 void recv_t(JobQueue *job_queue)
 {
+	Log::WriteLog(2, __s("Initializing Receiver..."));
 	DNSReceiver recver(job_queue);
+	Log::WriteLog(2, __s("Receiver start working..."));
 	recver.Start();
 }
 
-/*void sender_t(JobQueue *job_queue, HostList *host_list, MyMap *my_map)
+void sender_t(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string &address)
 {
-	DNSSender sender(job_queue, host_list, my_map);
-	sender.Start();
-}*/
-
-void sender_t(JobQueue* job_queue, HostList* host_list, MyMap* my_map, const std::string& address)
-{
+	Log::WriteLog(2, __s("Initializing Sender..."));
 	DNSSender sender(job_queue, host_list, my_map, address);
+	Log::WriteLog(2, __s("Sender start working..."));
 	sender.Start();
 }
 
-void checkparameters(const int argc, const char* argv[], std::string &host_path, std::string &superior_server_addr)
+void checkparameters(const int argc, const char *argv[], std::string &host_path, std::string &superior_server_addr)
 {
 	bool debug_flag = true;
 	bool path_flag = true;
@@ -47,7 +45,6 @@ void checkparameters(const int argc, const char* argv[], std::string &host_path,
 					Log::InitLog(1);
 					debug_flag = false;
 				}
-				
 			}
 			else if (parameter == "-dd")
 			{
@@ -71,8 +68,9 @@ void checkparameters(const int argc, const char* argv[], std::string &host_path,
 				}
 				else
 				{
-					unsigned long testip = inet_addr(parameter.c_str());
-					if (testip != INADDR_NONE)
+					char buffer[8];
+					auto ip_test = inet_pton(AF_INET, parameter.c_str(), buffer);
+					if (ip_test == 1)
 					{
 						//std::cout << parameter << std::endl;
 						if (ip_flag)
@@ -80,7 +78,6 @@ void checkparameters(const int argc, const char* argv[], std::string &host_path,
 							superior_server_addr = parameter;
 							ip_flag = false;
 						}
-						
 					}
 					else
 					{
@@ -93,45 +90,45 @@ void checkparameters(const int argc, const char* argv[], std::string &host_path,
 	}
 }
 
-
-int main(const int argc, const char* argv[])
+int main(const int argc, const char *argv[])
 {
-	if (argc > 4)return 0;
-	std::string host_path  = "../../../data/hosts.txt";
+	if (argc > 4)
+		return 0;
+
+	std::string host_path = "../data/hosts.txt";
 	std::string superior_server_addr = "10.3.9.4";
+
 	checkparameters(argc, argv, host_path, superior_server_addr);
-	std::cout << "host_path: " << host_path << std::endl;
-	std::cout << "superiror_server_addr: " << superior_server_addr << std::endl;
+
+	Log::WriteLog(2, __s("host file path: ") + host_path);
+	Log::WriteLog(2, __s("supervisor dns server address: ") + superior_server_addr);
+
 	HostList host_list(host_path);
 	JobQueue job_queue;
 	MyMap my_map;
 
 	std::thread	r(recv_t, &job_queue);
 	Sleep(100);
-	void (*so)(JobQueue *, HostList *, MyMap *, const std::string &address) = sender_t;
-	
-	constexpr int sender_num = 4;
+
+	constexpr int sender_num = 16;
 	std::vector<std::thread> sender_vec;
 	for (int i = 0; i < sender_num; i++)
 	{
-		sender_vec.push_back(std::thread(so, &job_queue, &host_list, &my_map, superior_server_addr));
+		sender_vec.push_back(std::thread(sender_t, &job_queue, &host_list, &my_map, superior_server_addr));
 		Sleep(100);
 	}
-	
-	
+
 	// std::thread s(so, &job_queue, &host_list, &my_map);
 	// std::thread s1(so, &job_queue, &host_list, &my_map);
-	
+
 	for (auto &t : sender_vec)
 	{
 		t.join();
 	}
-	
+
 	// s.join();
 	// s1.join();
 	r.join();
-
-    return 0;
+	Log::CloseLog();
+	return 0;
 }
-
-

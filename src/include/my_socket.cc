@@ -19,12 +19,12 @@ MySocket::MySocket(SocketType sock_type) : sock_type_(sock_type)
 	if (InitSock(sock_type_, kDefaultDNSPort, kSuperiorDNSServerAddr) == ERROR_SUCCESS)
 	{
 		init_success_ = true;
-		// log write
+		Log::WriteLog(2, __s("MySocket InitSocket success, Port: ") + kDefaultDNSPort + __s(" su_dns addr: ") + kSuperiorDNSServerAddr);
 	}
 	else
 	{
 		init_success_ = false;
-		// log write
+		Log::WriteLog(2, __s("MySocket InitSocket failed"));
 	}
 }
 
@@ -33,12 +33,12 @@ MySocket::MySocket(SocketType sock_type, const char *port, const std::string &su
 	if (InitSock(sock_type_, port, superior_dns) == ERROR_SUCCESS)
 	{
 		init_success_ = true;
-		// log write
+		Log::WriteLog(2, __s("MySocket InitSocket success, Port: ") + port + __s(" su_dns addr: ") + superior_dns);
 	}
 	else
 	{
 		init_success_ = false;
-		// log write
+		Log::WriteLog(2, __s("MySocket InitSocket failed"));
 	}
 }
 
@@ -50,17 +50,13 @@ MySocket::~MySocket()
 		if (last_error_ == SOCKET_ERROR)
 		{
 			last_error_ = WSAGetLastError();
-			// log write
+			Log::WriteLog(2, __s("MySocket ~ close socket failed, ErrorCode: ") + std::to_string(last_error_));
 		}
 	}
 	if (WSACleanup())
 	{
 		last_error_ = WSAGetLastError();
-		// log write
-	}
-	else
-	{
-		// log write
+		Log::WriteLog(2, __s("MySocket ~ WSACleanup failed, ErrorCode: ") + std::to_string(last_error_));
 	}
 }
 
@@ -72,8 +68,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 	last_error_ = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (last_error_)
 	{
-		// log write
-
+		Log::WriteLog(2, __s("MySocket InitSock WSAStartup failed, ErrorCode: ") + std::to_string(last_error_));
 		return last_error_;
 	}
 
@@ -96,7 +91,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 
 	if (last_error_)
 	{
-		// log write
+		Log::WriteLog(2, __s("MySocket InitSock getaddrinfo failed, ErrorCode: ") + std::to_string(last_error_));
 		WSACleanup();
 		return last_error_;
 	}
@@ -105,9 +100,9 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 	if (sock_ == INVALID_SOCKET)
 	{
 		last_error_ = WSAGetLastError();
+		Log::WriteLog(2, __s("MySocket InitSock socket failed, ErrorCode: ") + std::to_string(last_error_));
 		freeaddrinfo(result);
 		WSACleanup();
-		// log write
 		return last_error_;
 	}
 
@@ -115,10 +110,10 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 	if (setsockopt(sock_, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, reinterpret_cast<const char *>(&is_reuseaddr), sizeof(is_reuseaddr) == SOCKET_ERROR))
 	{
 		last_error_ = WSAGetLastError();
+		Log::WriteLog(2, __s("MySocket InitSock set SO_EXCLUSIVEADDRUSE to false failed, ErrorCode: ") + std::to_string(last_error_));
 		closesocket(sock_);
 		freeaddrinfo(result);
 		WSACleanup();
-		// log write
 		return last_error_;
 	}
 
@@ -126,18 +121,18 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 	if (setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&is_reuseaddr), sizeof(is_reuseaddr) == SOCKET_ERROR))
 	{
 		last_error_ = WSAGetLastError();
+		Log::WriteLog(2, __s("MySocket InitSock set SO_REUSEADDR to true failed, ErrorCode: ") + std::to_string(last_error_));
 		closesocket(sock_);
 		freeaddrinfo(result);
 		WSACleanup();
-		// log write
 		return last_error_;
 	}
 
 	last_error_ = bind(sock_, result->ai_addr, static_cast<int>(result->ai_addrlen));
 	if (last_error_ == SOCKET_ERROR)
 	{
-		// log write
 		last_error_ = WSAGetLastError();
+		Log::WriteLog(2, __s("MySocket InitSock bind socket failed, ErrorCode: ") + std::to_string(last_error_));
 		freeaddrinfo(result);
 		WSACleanup();
 		return last_error_;
@@ -147,6 +142,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 	last_error_ = getsockname(sock_, reinterpret_cast<sockaddr *>(&my_addr_info_), &my_addr_info_size_);
 	if (last_error_)
 	{
+		Log::WriteLog(2, __s("MySocket InitSock getsockname failed, ErrorCode: ") + std::to_string(last_error_));
 		freeaddrinfo(result);
 		WSACleanup();
 		return last_error_;
@@ -162,7 +158,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 		last_error_ = getsockopt(sock_, SOL_SOCKET, SO_MAX_MSG_SIZE, reinterpret_cast<char *>(&max_msg_size_), reinterpret_cast<int *>(&max_msg_size_len_));
 		if (last_error_ == SOCKET_ERROR)
 		{
-			// log write
+			Log::WriteLog(2, __s("MySocket InitSock get max msg size failed, ErrorCode: ") + std::to_string(last_error_));
 			freeaddrinfo(result);
 			WSACleanup();
 			return last_error_;
@@ -172,6 +168,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 		last_error_ = getaddrinfo(superior_dns.c_str(), kDefaultDNSPort, &hint, &result);
 		if (last_error_)
 		{
+			Log::WriteLog(2, __s("MySocket InitSock get superior addr info failed, ErrorCode: ") + std::to_string(last_error_));
 			WSACleanup();
 			return last_error_;
 		}
@@ -191,17 +188,31 @@ DWORD MySocket::_RecvFrom(QueueData &queue_data)
 		recv_len_ = recvfrom(sock_, recvbuf_, recvbuflen_, 0, reinterpret_cast<sockaddr *>(&from_), &from_len_);
 		if (recv_len_ == 0)
 		{
-			// log write : packet contains no data
+			Log::WriteLog(2, __s("MySocket recvfrom connectiong is closed gracefully"));
 			continue;
 		}
 		else if (recv_len_ < 0)
 		{
 			last_error_ = WSAGetLastError();
-			// log write
+			if (last_error_ == WSAETIMEDOUT)
+			{
+				Log::WriteLog(2, __s("MySocket recvfrom failed: timeout"));
+				// continue;
+			}
+			else if (last_error_ == WSAECONNRESET)
+			{
+				Log::WriteLog(2, __s("MySocket recvfrom failed: previous send destination unreachable, use public socket instead of local socket"));
+				// continue;
+			}
+			else
+			{
+				Log::WriteLog(2, __s("MySocket recvfrom failed: ErrorCode:") + std::to_string(last_error_));
+			}
 			// error handle
 		}
 		else
 		{
+			Log::WriteLog(2, __s("MySocket recvfrom success: receive(byte): ") + std::to_string(recv_len_));
 			queue_data.addr = from_;
 			queue_data.len = recv_len_;
 			std::memcpy(queue_data.data, recvbuf_, recv_len_);
@@ -217,13 +228,13 @@ DWORD MySocket::_SendTo(const QueueData &queue_data)
 	if (last_error_ == SOCKET_ERROR)
 	{
 		last_error_ = WSAGetLastError();
-		// log write
+		Log::WriteLog(2, __s("MySocket sendto failed: ErrorCode: ") + std::to_string(last_error_));
 		// error handling
 		return last_error_;
 	}
+	Log::WriteLog(2, __s("MySocket sendto success: send size: ") + std::to_string(last_error_));
 	return ERROR_SUCCESS;
 }
-
 
 // 从指定端口接收数据,返回一个QueueData(需要自行管理内存)
 
@@ -242,7 +253,7 @@ QueueData MySocket::RecvFrom()
 	}
 	else
 	{
-		// log write
+		Log::WriteLog(2, __s("MySocket RecvFrom failed: invalid socket type"));
 		return QueueData();
 	}
 }
@@ -255,7 +266,6 @@ bool MySocket::SendTo(const QueueData &queue_data)
 
 		if (last_error_ != ERROR_SUCCESS)
 		{
-			// log write
 			return false;
 		}
 
@@ -263,8 +273,7 @@ bool MySocket::SendTo(const QueueData &queue_data)
 	}
 	else
 	{
-		// log write
+		Log::WriteLog(2, __s("MySocket SendTo failed: invalid socket type"));
 		return false;
 	}
 }
-
