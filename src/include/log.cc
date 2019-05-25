@@ -26,11 +26,11 @@ void Log::InitLog(const int debug_level)
 	std::tm time_pack;
 	auto error_code = localtime_s(&time_pack, &current_time);
 
-	ss << time_pack.tm_mday << time_pack.tm_hour << time_pack.tm_min << time_pack.tm_sec;
+	ss << std::put_time(&time_pack, "%d-%H%M%S");
 	std::string log_name = ss.str();
 
 	log_path = log_dir + log_name + log_ext;
-	
+
 	log_ofs.open(log_path);
 	if (log_ofs)
 	{
@@ -63,10 +63,12 @@ void Log::WriteLog(const int level, const std::string &log)
 		ss << std::put_time(&time_pack, "%H:%M:%S") << " ";
 		timestamp = ss.str();
 		ss.clear();
+		ss.str(std::string());
 
 		ss << "tid: " << std::this_thread::get_id() << "\t";
 		current_thread_id = ss.str();
 		ss.clear();
+		ss.str(std::string());
 
 		std::cout << log_id_str << timestamp << current_thread_id << log << std::endl;
 		log_ofs << log_id_str << timestamp << current_thread_id << log << std::endl;

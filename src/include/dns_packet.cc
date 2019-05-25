@@ -61,7 +61,6 @@ static void ReadFromCSTR(std::string &dest, const unsigned len, const char *src,
 		dest.push_back(src[ptr++]);
 }
 
-
 static unsigned short ctos(unsigned char hbyte, unsigned char lbyte)
 {
 	unsigned short high_byte = static_cast<unsigned char>(hbyte);
@@ -144,7 +143,6 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 		ReadFromCSTR(query[query_cnt].QTYPE, packet, ptr);
 		ReadFromCSTR(query[query_cnt].QCLASS, packet, ptr);
 	}
-
 
 	//answer
 	if (header.Flags >> 15)

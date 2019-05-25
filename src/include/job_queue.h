@@ -11,7 +11,6 @@ struct QueueData;
 class JobQueue
 {
 public:
-
 	JobQueue() = default;
 	void Push(const QueueData &packet);
 	// 将给定的sender与某一队列绑定, 之后直接从绑定后的队列Pop即可

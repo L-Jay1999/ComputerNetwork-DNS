@@ -18,7 +18,7 @@ class DNSSender
 {
 public:
 	DNSSender() = delete;
-	explicit DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string& address);
+	explicit DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string &address);
 	DNSSender(const DNSSender *other) = delete;
 	~DNSSender() = default;
 

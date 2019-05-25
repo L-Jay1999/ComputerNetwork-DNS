@@ -8,6 +8,7 @@
 #include "dns_packet.h"
 #include "job_queue.h"
 #include "dns_sender.h"
+#include "log.h"
 
 static int get_quest_port_random()
 {
@@ -19,7 +20,6 @@ static int get_quest_port_random()
 
 	return uid(rd);
 }
-
 
 DNSSender::DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string &address)
 	: job_queue_(job_queue), host_list_(host_list), my_map_(my_map), address_(address), sockSend_(SEND_SOCKET, "53", address)
@@ -49,22 +49,27 @@ void DNSSender::set_queue(MyQueue *data_queue)
 
 void DNSSender::Responce()
 {
-
 	for (int query_cnt = 0; query_cnt < dns_packet_.header.QDCOUNT; query_cnt++)
 	{
 		HostState state = host_list_->get_host_state(dns_packet_.query[query_cnt].QNAME);
+		char client_ip[24];
+		inet_ntop(AF_INET, &dns_packet_.from.sin_addr, client_ip, sizeof(client_ip));
+		Log::WriteLog(1, __s("Sender get packet querying for ") + dns_packet_.query[query_cnt].QNAME + __s(" from ") + __s(client_ip));
 		if (state == FIND)
 		{
+			Log::WriteLog(1, __s("Sender find ip address: ") + host_list_->get_ip_str(dns_packet_.query[query_cnt].QNAME) + __s(" for host: ") + dns_packet_.query[query_cnt].QNAME);
 			set_reply(host_list_->get_ip_str(dns_packet_.query[query_cnt].QNAME));
 			send_to_client();
 		}
 		else if (state == BANNED)
 		{
+			Log::WriteLog(1, __s("Sender host is banned"));
 			set_reply("0.0.0.0");
 			send_to_client();
 		}
 		else
 		{
+			Log::WriteLog(1, __s("Sender cannot find host, query ip address from ") + address_);
 			sockaddr_in temp = dns_packet_.raw_data.addr;
 			std::string temp_port = std::to_string(get_quest_port_random());
 
@@ -73,7 +78,6 @@ void DNSSender::Responce()
 			if (quest_sock.SendTo(dns_packet_.raw_data))
 			{
 				//log
-
 			}
 			else
 			{
@@ -90,7 +94,6 @@ void DNSSender::Responce()
 			{
 				//log
 			}
-
 		}
 	}
 }
@@ -128,7 +131,6 @@ void DNSSender::send_to_client()
 	if (sockSend_.SendTo(dns_packet_.raw_data))
 	{
 		//log
-
 	}
 	else
 	{
@@ -142,7 +144,6 @@ void DNSSender::send_to_client(const sockaddr_in &addr)
 	if (sockSend_.SendTo(dns_packet_.raw_data))
 	{
 		//log
-
 	}
 	else
 	{

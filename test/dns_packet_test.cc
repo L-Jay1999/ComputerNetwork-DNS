@@ -1,7 +1,6 @@
 #include "../src/include/dns_packet.h"
 int main()
 {
-	
 	char a[256];
 	a[0] = 0x00;
 	a[1] = 0x02;
@@ -114,7 +113,6 @@ int main()
 	p.Parse(q);
 	p.PrintPacket();
 	p.PrintRawData();
-	
 
 	/*
 	DNSPacket p;

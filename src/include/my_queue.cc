@@ -26,4 +26,3 @@ QueueData MyQueue::pop_front()
 	size_--;
 	return res;
 }
-
