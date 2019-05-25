@@ -63,7 +63,6 @@ MySocket::~MySocket()
 DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::string &superior_dns)
 {
 	WSADATA wsaData;
-	int last_error_;
 
 	last_error_ = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (last_error_)

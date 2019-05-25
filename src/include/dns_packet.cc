@@ -5,13 +5,15 @@
 #include <cstdio>
 #include <memory>
 #include <utility>
+#include <cassert>
 
 #include "dns_packet.h"
 
 template<typename T>
 void DNSPacket::CopyToCSTR(const T val, char *buffer, int &ptr)
 {
-	char temp_LE[12];
+	assert(buffer != nullptr);
+	char temp_LE[12];	// low end
 	const char *p_char = reinterpret_cast<const char *>(&val);
 
 	for (int i = sizeof(T) - 1; i >= 0; i--)
@@ -20,7 +22,7 @@ void DNSPacket::CopyToCSTR(const T val, char *buffer, int &ptr)
 		p_char++;
 	}
 
-	T *p_HE = reinterpret_cast<T *>(buffer + ptr);
+	T *p_HE = reinterpret_cast<T *>(buffer + ptr);	// hign end
 	T *p_LE = reinterpret_cast<T *>(temp_LE);
 	*p_HE = *p_LE;
 	ptr += sizeof(T);
@@ -28,6 +30,7 @@ void DNSPacket::CopyToCSTR(const T val, char *buffer, int &ptr)
 
 void DNSPacket::CopyToCSTR(const std::string &str, char *buffer, int &ptr)
 {
+	assert(buffer != nullptr);
 	for (const auto c : str)
 		CopyToCSTR(c, buffer, ptr);
 }
@@ -35,8 +38,9 @@ void DNSPacket::CopyToCSTR(const std::string &str, char *buffer, int &ptr)
 template<typename T>
 static void ReadFromCSTR(T &dest, const  char *src, int &ptr)
 {
+	assert(src != nullptr);
 	char temp_HE[12];
-	char *p_char = const_cast<char *>(src + ptr);
+	const char *p_char = src + ptr;
 
 	for (int i = sizeof(T) - 1; i >= 0; i--)
 	{
@@ -51,12 +55,14 @@ static void ReadFromCSTR(T &dest, const  char *src, int &ptr)
 
 static void ReadFromCSTR(char *dest, const unsigned len, const char *src, int &ptr)
 {
+	assert(src != nullptr);
 	for (unsigned i = 0; i < len; i++)
 		ReadFromCSTR(dest[i], src, ptr);
 }
 
 static void ReadFromCSTR(std::string &dest, const unsigned len, const char *src, int &ptr)
 {
+	assert(src != nullptr);
 	for (unsigned i = 0; i < len; i++)
 		dest.push_back(src[ptr++]);
 }
@@ -95,10 +101,6 @@ static unsigned short inttos(unsigned int &x)
 	return b;
 }
 
-DNSPacket::~DNSPacket()
-{
-}
-
 bool DNSPacket::Parse(const QueueData &raw_packet)
 {
 	raw_data = raw_packet;
@@ -114,7 +116,7 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 		packet[i] = raw_packet.data[i];
 	}*/
 
-	int packet_len = raw_packet.len;
+	// int packet_len = raw_packet.len;
 	from = raw_packet.addr;
 
 	ReadFromCSTR(header.ID, packet, ptr);
@@ -150,10 +152,10 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 		answer = std::make_unique<DNSAnswer[]>(header.ANCOUNT);
 		for (int answer_cnt = 0; answer_cnt < header.ANCOUNT; answer_cnt++)
 		{
-			if ((unsigned char)packet[ptr] == 0xc0)
+			if (static_cast<unsigned char>(packet[ptr]) == 0xc0)
 			{
-				int ptr_temp = ptr;
-				ptr = (int)packet[ptr + 1];
+				const int ptr_temp = ptr;
+				ptr = static_cast<int>(packet[ptr + 1]);
 				while (true)
 				{
 					ReadFromCSTR(char_num, packet, ptr);
@@ -189,7 +191,7 @@ bool DNSPacket::to_packet()
 	int ptr = 0;
 
 	//头
-	int isans = header.Flags >> 15;
+	const int isans = header.Flags >> 15;
 
 	CopyToCSTR(header.ID, data, ptr);
 	CopyToCSTR(header.Flags, data, ptr);
@@ -244,8 +246,8 @@ bool DNSPacket::to_packet()
 			RDLENGTH = answer[acnt].RDLENGTH;
 
 			//NAME (PTR)
-			CopyToCSTR((char)0xc0, data, ptr);
-			CopyToCSTR((char)0x0c, data, ptr);
+			CopyToCSTR(static_cast<unsigned char>(0xc0), data, ptr);
+			CopyToCSTR(static_cast<unsigned char>(0x0c), data, ptr);
 
 			//RR
 			CopyToCSTR(TYPE, data, ptr);
@@ -282,7 +284,7 @@ void DNSPacket::PrintPacket()
 		   (header.Flags & 0x0100) >> 8);
 	printf("RA = %X, Z = %X, RCODE = %X\n",
 		(header.Flags & 0x0080) >> 7, (header.Flags & 0x0070) >> 4, (header.Flags & 0x000f));
-	printf("QDCOUNT = %d, ANCOUNT = %d, NSCOUNT = %d, ARCOUNT = %d\n",
+	printf("QDCOUNT = %u, ANCOUNT = %u, NSCOUNT = %u, ARCOUNT = %u\n",
 		   header.QDCOUNT, header.ANCOUNT, header.NSCOUNT, header.ARCOUNT);
 
 	printf("-------------------Query------------------\n");
@@ -290,7 +292,7 @@ void DNSPacket::PrintPacket()
 	{
 		printf("Query %d:\n", qcnt + 1);
 		printf("QNAME = %s\n", query[qcnt].QNAME.c_str());
-		printf("QTYPE = %d, QCLASS = %d\n", query[qcnt].QTYPE, query[qcnt].QCLASS);
+		printf("QTYPE = %u, QCLASS = %u\n", query[qcnt].QTYPE, query[qcnt].QCLASS);
 		printf("\n");
 	}
 
@@ -301,12 +303,12 @@ void DNSPacket::PrintPacket()
 		{
 			printf("Answer %d:\n", acnt + 1);
 			printf("NAME = %s\n", answer[acnt].NAME.c_str());
-			printf("TYPE = %d, CLASS = %d\n", answer[acnt].TYPE, answer[acnt].CLASS);
-			printf("TTL = %d\n", answer[acnt].TTL);
-			printf("RDLENGTH = %d\n", answer[acnt].RDLENGTH);
+			printf("TYPE = %u, CLASS = %u\n", answer[acnt].TYPE, answer[acnt].CLASS);
+			printf("TTL = %u\n", answer[acnt].TTL);
+			printf("RDLENGTH = %u\n", answer[acnt].RDLENGTH);
 			if (answer[acnt].TYPE == 1)
 			{
-				printf("RDATA = %d.%d.%d.%d\n", answer[acnt].RDATA[0], answer[acnt].RDATA[1], answer[acnt].RDATA[2], answer[acnt].RDATA[3]);
+				printf("RDATA = %u.%u.%u.%u\n", answer[acnt].RDATA[0], answer[acnt].RDATA[1], answer[acnt].RDATA[2], answer[acnt].RDATA[3]);
 			}
 			else
 			{
