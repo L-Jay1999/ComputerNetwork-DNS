@@ -14,7 +14,7 @@ static const std::string kSuperiorDNSServerAddr = "10.3.9.4";
 
 static int get_send_port_random();
 
-MySocket::MySocket(SocketType sock_type, const std::string& address) : sock_type_(sock_type)
+MySocket::MySocket(SocketType sock_type) : sock_type_(sock_type)
 {
 	if (InitSock(sock_type_, kDefaultDNSPort, kSuperiorDNSServerAddr) == ERROR_SUCCESS)
 	{
