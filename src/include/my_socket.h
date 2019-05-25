@@ -41,7 +41,7 @@ public:
 
 private:
 	static constexpr int recvbuflen_ = 512;
-	
+	const char* kSuperiorDNSServerAddr;
 
 	DWORD InitSock(SocketType soc_type, const char *port, const std::string &superior_dns);
 

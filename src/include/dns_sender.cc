@@ -2,6 +2,7 @@
 #include <memory>
 #include <utility>
 #include <random>
+#include <iostream>
 
 #include "my_queue.h"
 #include "dns_packet.h"

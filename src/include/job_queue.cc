@@ -24,5 +24,6 @@ void JobQueue::Bind(DNSSender *sender)
 	if (pos_ < group_size_)
 		sender->set_queue(&queue_group_[pos_]);
 	else
-		throw std::logic_error("可绑定的队列已达到最大值");
+		//throw std::logic_error("可绑定的队列已达到最大值");
+		throw std::logic_error("");
 }
