@@ -47,7 +47,7 @@ bool HostList::Load(const std::string &path)
 		{
 			stream >> host_ip;
 			stream >> host_name;
-			//std::cout << data[0] << " " << data[1] << std::endl;
+			//std::cout << host_ip << " " << host_name << std::endl;
 			if (stream)
 				host_map_.insert({host_name, host_ip});
 		}
