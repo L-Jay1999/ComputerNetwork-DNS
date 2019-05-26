@@ -196,7 +196,7 @@ DWORD MySocket::_RecvFrom(QueueData &queue_data)
 			if (last_error_ == WSAETIMEDOUT)
 			{
 				Log::WriteLog(2, __s("MySocket recvfrom failed: timeout"));
-				// continue;
+				return WSAETIMEDOUT;
 			}
 			else if (last_error_ == WSAECONNRESET)
 			{
@@ -275,4 +275,26 @@ bool MySocket::SendTo(const QueueData &queue_data)
 		Log::WriteLog(2, __s("MySocket SendTo failed: invalid socket type"));
 		return false;
 	}
+}
+
+bool MySocket::set_recv_timeout(const int ms)
+{
+	if (sock_type_ == QUEST_SOCKET)
+	{
+		const DWORD time_out = ms;
+
+		last_error_ = setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&time_out), sizeof(time_out));
+		if (last_error_ == SOCKET_ERROR)
+		{
+			last_error_ = WSAGetLastError();
+			Log::WriteLog(2, __s("MySocket set recv timeout failed: ErrorCode:") + std::to_string(last_error_));
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+	else
+		return false;
 }

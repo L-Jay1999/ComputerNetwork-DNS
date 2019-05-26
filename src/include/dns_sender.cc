@@ -74,17 +74,31 @@ void DNSSender::Responce()
 			std::string temp_port = std::to_string(get_quest_port_random());
 
 			MySocket quest_sock(QUEST_SOCKET, temp_port.c_str(), address_);
-			dns_packet_.raw_data.addr = sockSend_.get_superior_server();
-			if (quest_sock.SendTo(dns_packet_.raw_data))
-			{
-				//log
-			}
-			else
-			{
-				//log
-			}
+			quest_sock.set_recv_timeout(1000);
 
-			auto temp_packet = quest_sock.RecvFrom();
+			int resend = 0;
+			QueueData temp_packet;
+
+			dns_packet_.raw_data.addr = sockSend_.get_superior_server();
+			while (true)
+			{
+				if (quest_sock.SendTo(dns_packet_.raw_data))
+				{
+					//log
+				}
+				else
+				{
+					//log
+				}
+
+				temp_packet = quest_sock.RecvFrom();
+				if (temp_packet.len)
+					break;
+				else if (resend > 1)
+					return;
+				else
+					resend++;
+			}
 			temp_packet.addr = temp;
 			if (sockSend_.SendTo(temp_packet))
 			{

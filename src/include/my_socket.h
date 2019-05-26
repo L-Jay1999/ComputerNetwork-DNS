@@ -29,6 +29,8 @@ public:
 
 	bool SendTo(const QueueData &queue_data);
 
+	bool set_recv_timeout(const int ms);
+
 	std::string get_ip_recver_str() const
 	{
 		static char buffer[20];

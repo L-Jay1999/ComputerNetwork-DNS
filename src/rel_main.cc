@@ -110,12 +110,11 @@ int main(const int argc, const char *argv[])
 	std::thread	r(recv_t, &job_queue);
 	Sleep(100);
 
-	constexpr int sender_num = 16;
+	constexpr int sender_num = 32;
 	std::vector<std::thread> sender_vec;
 	for (int i = 0; i < sender_num; i++)
 	{
 		sender_vec.push_back(std::thread(sender_t, &job_queue, &host_list, &my_map, superior_server_addr));
-		Sleep(100);
 	}
 
 	// std::thread s(so, &job_queue, &host_list, &my_map);

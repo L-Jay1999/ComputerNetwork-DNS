@@ -10,24 +10,25 @@
 
 void JobQueue::Push(const QueueData &packet)
 {
+	std::lock_guard<std::mutex> lock(push_mtx_);
 	std::random_device rd;
 
 	int upper_bound = pos_;
 	if (upper_bound)
 		upper_bound--;
 
-	std::uniform_int_distribution<int> uid(0, upper_bound);
-	int rand_pos = uid(rd);
-
-	queue_group_[rand_pos].push_back(packet);
-	Log::WriteLog(2, __s("JobQueue push packet to queue ") + std::to_string(rand_pos));
+	Log::WriteLog(1, __s("JobQueue push packet to queue ") + std::to_string(push_pos_));
+	queue_group_[push_pos_++].push_back(packet);
+	if (push_pos_ > upper_bound)
+		push_pos_ = 0;
 }
 
 void JobQueue::Bind(DNSSender *sender)
 {
+	std::lock_guard<std::mutex> lock(bind_mtx_);
 	if (pos_ < group_size_)
 	{
-		Log::WriteLog(2, __s("JobQueue bind ") + std::to_string(pos_) + __s(" queue to a DNSSender"));
+		Log::WriteLog(1, __s("JobQueue bind ") + std::to_string(pos_) + __s(" queue to a DNSSender"));
 		sender->set_queue(&queue_group_[pos_++]);
 	}
 	else
