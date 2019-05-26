@@ -38,6 +38,7 @@ private:
 
 	//MySocket sockSend_{SEND_SOCKET};	 // 发送
 	MySocket sockSend_;
+	MySocket sockQuest_;
 
 	std::string address_; // 上级dns服务器地址
 	MyMap *my_map_ = nullptr;

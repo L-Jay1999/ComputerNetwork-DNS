@@ -22,9 +22,10 @@ static int get_quest_port_random()
 }
 
 DNSSender::DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string &address)
-	: job_queue_(job_queue), host_list_(host_list), my_map_(my_map), address_(address), sockSend_(SEND_SOCKET, "53", address)
+	: job_queue_(job_queue), host_list_(host_list), my_map_(my_map), address_(address), sockSend_(SEND_SOCKET, "53", address), sockQuest_(QUEST_SOCKET, std::to_string(get_quest_port_random()).c_str(), address)
 {
 	job_queue_->Bind(this);
+	sockQuest_.set_recv_timeout(1000);
 }
 
 void DNSSender::Start()
@@ -71,10 +72,6 @@ void DNSSender::Responce()
 		{
 			Log::WriteLog(1, __s("Sender cannot find host, query ip address from ") + address_);
 			sockaddr_in temp = dns_packet_.raw_data.addr;
-			std::string temp_port = std::to_string(get_quest_port_random());
-
-			MySocket quest_sock(QUEST_SOCKET, temp_port.c_str(), address_);
-			quest_sock.set_recv_timeout(1000);
 
 			int resend = 0;
 			QueueData temp_packet;
@@ -82,16 +79,10 @@ void DNSSender::Responce()
 			dns_packet_.raw_data.addr = sockSend_.get_superior_server();
 			while (true)
 			{
-				if (quest_sock.SendTo(dns_packet_.raw_data))
-				{
-					//log
-				}
-				else
-				{
-					//log
-				}
+				if (!sockQuest_.SendTo(dns_packet_.raw_data))
+					Log::WriteLog(2, __s("Sender send to superior dns server failed, ErrorCode: ") + std::to_string(WSAGetLastError()));
 
-				temp_packet = quest_sock.RecvFrom();
+				temp_packet = sockQuest_.RecvFrom();
 				if (temp_packet.len)
 					break;
 				else if (resend > 1)
@@ -100,14 +91,10 @@ void DNSSender::Responce()
 					resend++;
 			}
 			temp_packet.addr = temp;
-			if (sockSend_.SendTo(temp_packet))
-			{
-				//log
-			}
+			if (!sockSend_.SendTo(temp_packet))
+				Log::WriteLog(2, __s("Sender send to client failed, ErrorCode: ") + std::to_string(WSAGetLastError()));
 			else
-			{
-				//log
-			}
+				Log::WriteLog(2, __s("Sender send to client success"));
 		}
 	}
 }
