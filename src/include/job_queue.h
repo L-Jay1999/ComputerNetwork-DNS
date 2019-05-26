@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <map>
+#include <mutex>
 
 #include "my_queue.h"
 
@@ -18,5 +19,8 @@ public:
 private:
 	static constexpr int group_size_ = 256;
 	std::atomic<int> pos_ = 0;
+	int push_pos_ = 0;
 	MyQueue queue_group_[group_size_];
+	std::mutex push_mtx_;
+	std::mutex bind_mtx_;
 };
