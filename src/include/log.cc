@@ -14,41 +14,46 @@ static const std::string log_dir = "./";
 static const std::string log_ext = ".log";
 static std::string log_path;
 static bool is_init = false;
-static std::mutex mtx_;
+static std::mutex write_mtx_;
 static std::ofstream log_ofs;
-static int dbg_level = 2;
+static int dbg_level = 0;
 static int log_id = 0;
 
 void Log::InitLog(const int debug_level)
 {
-	std::stringstream ss;
-	std::time_t current_time = std::time(nullptr);
-	std::tm time_pack;
-	auto error_code = localtime_s(&time_pack, &current_time);
-
-	ss << std::put_time(&time_pack, "%d-%H%M%S");
-	std::string log_name = ss.str();
-
-	log_path = log_dir + log_name + log_ext;
-
-	log_ofs.open(log_path);
-	if (log_ofs)
+	if (debug_level)
 	{
-		dbg_level = debug_level;
-		is_init = true;
-	}
-	else
-	{
-		is_init = false;
+		std::stringstream ss;
+		std::time_t current_time = std::time(nullptr);
+		std::tm time_pack;
+		auto error_code = localtime_s(&time_pack, &current_time);
+
+		ss << std::put_time(&time_pack, "%d-%H%M%S");
+		std::string log_name = ss.str();
+
+		log_path = log_dir + log_name + log_ext;
+
+		log_ofs.open(log_path);
+		if (log_ofs)
+		{
+			dbg_level = debug_level;
+			is_init = true;
+		}
+		else
+		{
+			is_init = false;
+		}
 	}
 }
 
 void Log::WriteLog(const int level, const std::string &log)
 {
-	std::lock_guard<std::mutex> lock(mtx_);
+	if (level < 1)
+		return;
+	std::lock_guard<std::mutex> lock(write_mtx_);
 	if (!is_init)
 	{
-		InitLog(2);
+		InitLog(0);
 	}
 	if (level <= dbg_level)
 	{
@@ -77,7 +82,7 @@ void Log::WriteLog(const int level, const std::string &log)
 
 void Log::CloseLog()
 {
-	std::lock_guard<std::mutex> lock(mtx_);
+	std::lock_guard<std::mutex> lock(write_mtx_);
 	if (log_ofs)
 		log_ofs.close();
 }
