@@ -110,7 +110,7 @@ int main(const int argc, const char *argv[])
 	std::thread	r(recv_t, &job_queue);
 	Sleep(100);
 
-	constexpr int sender_num = 32;
+	constexpr int sender_num = 16;
 	std::vector<std::thread> sender_vec;
 	for (int i = 0; i < sender_num; i++)
 	{
