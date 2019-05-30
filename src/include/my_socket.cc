@@ -64,15 +64,16 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 {
 	WSADATA wsaData;
 
-	last_error_ = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (last_error_)
+	last_error_ = WSAStartup(MAKEWORD(2, 2), &wsaData);//连接应用程序与winsock
+	if (last_error_)//初始化失败，输出错误信息并退出
 	{
 		Log::WriteLog(2, __s("MySocket InitSock WSAStartup failed, ErrorCode: ") + std::to_string(last_error_));
 		return last_error_;
 	}
 
+	//建立并配置addrinfo结构用于getaddrinfo函数
 	addrinfo hint, *result = nullptr;
-
+	
 	ZeroMemory(&hint, sizeof(hint));
 	hint.ai_family = AF_INET;
 	hint.ai_socktype = SOCK_DGRAM;
@@ -88,14 +89,14 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 		last_error_ = getaddrinfo("localhost", port, &hint, &result);
 	}
 
-	if (last_error_)
+	if (last_error_)//result指针操作失败时，返回错误信息
 	{
 		Log::WriteLog(2, __s("MySocket InitSock getaddrinfo failed, ErrorCode: ") + std::to_string(last_error_));
 		WSACleanup();
 		return last_error_;
 	}
 
-	sock_ = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+	sock_ = socket(result->ai_family, result->ai_socktype, result->ai_protocol);//建立一个监听客户端连接的socket
 	if (sock_ == INVALID_SOCKET)
 	{
 		last_error_ = WSAGetLastError();
@@ -106,6 +107,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 	}
 
 	DWORD is_reuseaddr = FALSE;
+	//防止其他socket被强制绑定到相同的地址和端口
 	if (setsockopt(sock_, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, reinterpret_cast<const char *>(&is_reuseaddr), sizeof(is_reuseaddr) == SOCKET_ERROR))
 	{
 		last_error_ = WSAGetLastError();
@@ -116,6 +118,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 		return last_error_;
 	}
 
+	//允许将socket绑定到已在使用的地址
 	is_reuseaddr = TRUE;
 	if (setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&is_reuseaddr), sizeof(is_reuseaddr) == SOCKET_ERROR))
 	{
@@ -127,6 +130,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 		return last_error_;
 	}
 
+	//利用bind检查创建的socket和getaddrinfo函数返回的sockaddr结构是否有误
 	last_error_ = bind(sock_, result->ai_addr, static_cast<int>(result->ai_addrlen));
 	if (last_error_ == SOCKET_ERROR)
 	{
@@ -138,6 +142,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 	}
 
 	my_addr_info_size_ = sizeof(my_addr_info_);
+	//检索sock_的本地名称，确定与本地关联
 	last_error_ = getsockname(sock_, reinterpret_cast<sockaddr *>(&my_addr_info_), &my_addr_info_size_);
 	if (last_error_)
 	{
@@ -147,13 +152,14 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 		return last_error_;
 	}
 
-	if (soc_type == RECV_SOCKET)
+	if (soc_type == RECV_SOCKET)//如果是接收socket不作操作
 	{
 		freeaddrinfo(result);
 	}
 	else
 	{
 		max_msg_size_len_ = sizeof(max_msg_size_);
+		//检索socket当前值是否超过最大信息大小
 		last_error_ = getsockopt(sock_, SOL_SOCKET, SO_MAX_MSG_SIZE, reinterpret_cast<char *>(&max_msg_size_), reinterpret_cast<int *>(&max_msg_size_len_));
 		if (last_error_ == SOCKET_ERROR)
 		{
@@ -164,7 +170,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 		}
 
 		freeaddrinfo(result);
-		last_error_ = getaddrinfo(superior_dns.c_str(), kDefaultDNSPort, &hint, &result);
+		last_error_ = getaddrinfo(superior_dns.c_str(), kDefaultDNSPort, &hint, &result);//提供从主机名到地址的独立于协议的转换,将result修改为addrinfo结构的链接列表
 		if (last_error_)
 		{
 			Log::WriteLog(2, __s("MySocket InitSock get superior addr info failed, ErrorCode: ") + std::to_string(last_error_));

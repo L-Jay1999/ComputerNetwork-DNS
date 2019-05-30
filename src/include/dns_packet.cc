@@ -10,6 +10,7 @@
 #include "dns_packet.h"
 
 template<typename T>
+//将val的内容以ptr为位置指针写入buffer
 void DNSPacket::CopyToCSTR(const T val, char *buffer, int &ptr)
 {
 	assert(buffer != nullptr);
@@ -36,6 +37,7 @@ void DNSPacket::CopyToCSTR(const std::string &str, char *buffer, int &ptr)
 }
 
 template<typename T>
+//将src的内容以ptr为位置指针读入dest
 static void ReadFromCSTR(T &dest, const  char *src, int &ptr)
 {
 	assert(src != nullptr);
@@ -53,6 +55,7 @@ static void ReadFromCSTR(T &dest, const  char *src, int &ptr)
 	ptr += sizeof(T);
 }
 
+//将src的内容以ptr为位置指针读取之后len位的内容存入dest
 static void ReadFromCSTR(char *dest, const unsigned len, const char *src, int &ptr)
 {
 	assert(src != nullptr);
@@ -118,7 +121,6 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 
 	// int packet_len = raw_packet.len;
 	from = raw_packet.addr;
-
 	ReadFromCSTR(header.ID, packet, ptr);
 	ReadFromCSTR(header.Flags, packet, ptr);
 	ReadFromCSTR(header.QDCOUNT, packet, ptr);
@@ -147,12 +149,12 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 	}
 
 	//answer
-	if (header.Flags >> 15)
+	if (header.Flags >> 15)//读取QR用于判断
 	{
 		answer = std::make_unique<DNSAnswer[]>(header.ANCOUNT);
 		for (int answer_cnt = 0; answer_cnt < header.ANCOUNT; answer_cnt++)
 		{
-			if (static_cast<unsigned char>(packet[ptr]) == 0xc0)
+			if (static_cast<unsigned char>(packet[ptr]) == 0xc0)//ptr指向0xc0时，ptr接下来一位会指向QNAME首位的地址，据此进行读取
 			{
 				const int ptr_temp = ptr;
 				ptr = static_cast<int>(packet[ptr + 1]);
@@ -208,7 +210,7 @@ bool DNSPacket::to_packet()
 		QTYPE = query[query_cnt].QTYPE;
 		QCLASS = query[query_cnt].QCLASS;
 		int cnt = 0;
-		ptr++;
+		ptr++;//QNAME转化前ptr+1预留出网址的位数符空间
 		for (int i = 0; i < query[query_cnt].QNAME.length(); i++)
 		{
 			if (query[query_cnt].QNAME[i] != '.')
