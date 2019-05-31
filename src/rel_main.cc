@@ -1,4 +1,4 @@
-﻿#include <thread>
+#include <thread>
 #include <io.h>
 #include <cctype>
 
