@@ -49,16 +49,16 @@ struct DNSPacket
 	DNSPacket &operator=(const DNSPacket &rhs) = delete;
 	~DNSPacket() = default;
 
-	bool Parse(const QueueData &raw_packet);
-	bool to_packet();
-	void PrintRawData();
-	void PrintPacket();
+	bool Parse(const QueueData &raw_packet);                        
+	bool to_packet();                                               
+	void PrintRawData();                                            
+	void PrintPacket();                                             
 
-	sockaddr_in from{};
-	QueueData raw_data{};
-	DNSHeader header{};
-	std::unique_ptr<DNSQuery[]> query;
-	std::unique_ptr<DNSAnswer[]> answer;
+	sockaddr_in from{};                                             //报文的sockaddr信息
+	QueueData raw_data{};                                           //报文的原始数据
+	DNSHeader header{};                                             //报文的头部
+	std::unique_ptr<DNSQuery[]> query;                              //报文的询问部分
+	std::unique_ptr<DNSAnswer[]> answer;                            //报文的回答部分
 
 	void CopyToCSTR(const std::string &str, char *buffer, int &ptr);
 

@@ -121,7 +121,6 @@ void DNSSender::set_reply(const std::string &ip)
 	dns_packet_.header.ANCOUNT = 1;
 
 	dns_packet_.answer = std::make_unique<DNSAnswer[]>(1);
-	// dns_packet_.answer->NAME = name;
 	dns_packet_.answer[0].TYPE = 1;
 	dns_packet_.answer[0].CLASS = 1;
 	dns_packet_.answer[0].TTL = 168;
@@ -159,12 +158,5 @@ void DNSSender::send_to_client()
 void DNSSender::send_to_client(const sockaddr_in &addr)
 {
 	dns_packet_.raw_data.addr = addr;			// 将目的地址修改为上级地址
-	if (sockSend_.SendTo(dns_packet_.raw_data)) // 在socket上写入传出数据raw_data
-	{
-		//log
-	}
-	else
-	{
-		//log
-	}
+	sockSend_.SendTo(dns_packet_.raw_data) // 在socket上写入传出数据raw_data
 }

@@ -22,24 +22,22 @@ public:
 	DNSSender(const DNSSender *other) = delete;
 	~DNSSender() = default;
 
-	void Start();
+	void Start();                               
 	void set_packet();
+	
+	void set_queue(MyQueue *queue) noexcept;    
 
-	// 供job_queue分配
-	void set_queue(MyQueue *queue) noexcept;
-
-	// 响应
-	void Responce();
+	void Responce();                            
 
 private:
-	JobQueue *job_queue_ = nullptr;
-	MyQueue *data_queue_ = nullptr; // 从该队列中取出数据并处理发送
-	HostList *host_list_ = nullptr;
+	JobQueue *job_queue_ = nullptr; // 从该队列中取出数据并处理发送
+	MyQueue *data_queue_ = nullptr; // 将数据复制到该结构中
+	HostList *host_list_ = nullptr; // 对照表
 
-	MySocket sockSend_;
-	MySocket sockQuest_;
+	MySocket sockSend_;             // 质询socket
+	MySocket sockQuest_;            //
 
-	std::string address_; // 上级dns服务器地址
+	std::string address_;           // 上级dns服务器地址
 	MyMap *my_map_ = nullptr;
 	DNSPacket dns_packet_;
 

@@ -77,8 +77,6 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 	const char *packet = raw_packet.data;
 	int ptr = 0;
 
-	// char packet[256];
-
 	from = raw_packet.addr;
 	ReadFromCSTR(header.ID, packet, ptr);
 	ReadFromCSTR(header.Flags, packet, ptr);
@@ -144,7 +142,6 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 
 bool DNSPacket::to_packet()
 {
-	// char data[2048];
 	char *data = raw_data.data;
 	int ptr = 0;
 
@@ -214,21 +211,11 @@ bool DNSPacket::to_packet()
 			CopyToCSTR(RDLENGTH, data, ptr);
 			CopyToCSTR(answer[acnt].RDATA, data, ptr);
 
-			//answer
-			/*
-			for (int i = 0; i < answer[answer_cnt].RDATA.length(); i++)
-			{
-				raw_data.data[p_question] = answer[answer_cnt].RDATA[i];
-				p_question++;
-			}
-			*/
 			ptr++;
 		}
 	}
-	//raw_data.data[p_question] = '\0';
 	raw_data.addr = from; //目的地址默认为源地址（即用户）
 	raw_data.len = ptr;
-	//raw_data.len = raw_data.data.length();
 	return true;
 }
 
