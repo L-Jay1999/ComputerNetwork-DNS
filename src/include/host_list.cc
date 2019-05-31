@@ -21,11 +21,11 @@ HostList::HostList(const std::string &path)
 
 HostState HostList::get_host_state(const std::string &host_name) const
 {
-	auto iter = host_map_.find(host_name);
+	auto iter = host_map_.find(host_name);//在提供的配置文件生成的表中查询是否有传入变量名（Q.NAME）
 
-	if (iter == host_map_.end())
+	if (iter == host_map_.end())//到末尾，并未查询到
 		return NOT_FIND;
-	else if (iter->second == banned_host_)
+	else if (iter->second == banned_host_)//查询到但域名为0.0.0.0
 		return BANNED;
 	else
 		return FIND;

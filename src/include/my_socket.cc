@@ -190,21 +190,21 @@ DWORD MySocket::_RecvFrom(QueueData &queue_data)
 {
 	while (1)
 	{
-		recv_len_ = recvfrom(sock_, recvbuf_, recvbuflen_, 0, reinterpret_cast<sockaddr *>(&from_), &from_len_);
-		if (recv_len_ == 0)
+		recv_len_ = recvfrom(sock_, recvbuf_, recvbuflen_, 0, reinterpret_cast<sockaddr *>(&from_), &from_len_);//接收上级返回的数据报并将数据存入recvbuf_，将原地址存入from_
+		if (recv_len_ == 0)//连接正常关闭
 		{
 			Log::WriteLog(2, __s("MySocket recvfrom connectiong is closed gracefully"));
 			continue;
 		}
-		else if (recv_len_ < 0)
+		else if (recv_len_ < 0)//连接出错
 		{
 			last_error_ = WSAGetLastError();
-			if (last_error_ == WSAETIMEDOUT)
+			if (last_error_ == WSAETIMEDOUT)//因为超时而出错
 			{
 				Log::WriteLog(2, __s("MySocket recvfrom failed: timeout"));
 				return WSAETIMEDOUT;
 			}
-			else if (last_error_ == WSAECONNRESET)
+			else if (last_error_ == WSAECONNRESET)//当前socket不可用
 			{
 				Log::WriteLog(2, __s("MySocket recvfrom failed: previous send destination unreachable, use public socket instead of local socket"));
 				// continue;
@@ -215,12 +215,12 @@ DWORD MySocket::_RecvFrom(QueueData &queue_data)
 			}
 			// error handle
 		}
-		else
+		else//接收到了数据，recv_len_为接收字节数
 		{
 			Log::WriteLog(2, __s("MySocket recvfrom success: receive(byte): ") + std::to_string(recv_len_));
 			queue_data.addr = from_;
 			queue_data.len = recv_len_;
-			std::memcpy(queue_data.data, recvbuf_, recv_len_);
+			std::memcpy(queue_data.data, recvbuf_, recv_len_);//将回答信息写入queue_data.data
 			break;
 		}
 	}
@@ -289,7 +289,7 @@ bool MySocket::set_recv_timeout(const int ms)
 	{
 		const DWORD time_out = ms;
 
-		last_error_ = setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&time_out), sizeof(time_out));
+		last_error_ = setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&time_out), sizeof(time_out));//设置超时时间
 		if (last_error_ == SOCKET_ERROR)
 		{
 			last_error_ = WSAGetLastError();
