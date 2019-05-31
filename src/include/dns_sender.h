@@ -10,7 +10,6 @@
 #include "my_socket.h"
 #include "dns_packet.h"
 #include "host_list.h"
-#include "my_map.h"
 
 class MyQueue;
 class JobQueue;
@@ -22,12 +21,12 @@ public:
 	DNSSender(const DNSSender *other) = delete;
 	~DNSSender() = default;
 
-	void Start();                               
+	void Start();
 	void set_packet();
-	
-	void set_queue(MyQueue *queue) noexcept;    
 
-	void Responce();                            
+	void set_queue(MyQueue *queue) noexcept;
+
+	void Responce();
 
 private:
 	JobQueue *job_queue_ = nullptr; // 控制器
@@ -37,7 +36,7 @@ private:
 	MySocket sockSend_;
 	MySocket sockQuest_;
 
-	std::string address_;           // 上级dns服务器地址  
+	std::string address_;           // 上级dns服务器地址
 	DNSPacket dns_packet_;          // 将数据放到该结构体
 
 	void set_reply(const std::string &ip);

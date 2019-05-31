@@ -7,17 +7,18 @@
 #include <chrono>
 #include <ctime>
 #include <string>
-#include <atomic>
-#include <cerrno>
 
 #include "log.h"
+
 static const std::string log_dir = "./";
 static const std::string log_ext = ".log";
 static std::string log_path;
+
 static bool is_init = false;
-static std::mutex write_mtx_;
+static std::mutex write_mtx_;	// 避免流失去同步
 static std::ofstream log_ofs;
-static int dbg_level = 0;
+
+static int dbg_level = 0;	// 0时不输出
 static int log_id = 0;
 
 void Log::InitLog(const int debug_level)
@@ -51,6 +52,7 @@ void Log::WriteLog(const int level, const std::string &log)
 {
 	if (level < 1)
 		return;
+
 	std::lock_guard<std::mutex> lock(write_mtx_);
 	if (!is_init)
 	{

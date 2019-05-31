@@ -5,9 +5,9 @@
 
 enum HostState
 {
-	BANNED = 0,//À¹½Ø
-	FIND,      //ÕÒµ½
-	NOT_FIND   //Î´ÕÒµ½
+	BANNED = 0,//æ‹¦æˆª
+	FIND,      //æ‰¾åˆ°
+	NOT_FIND   //æœªæ‰¾åˆ°
 };
 
 class HostList
@@ -19,7 +19,7 @@ public:
 
 private:
 	bool Load(const std::string &path);
-	std::string host_path_;                                 //ÎÄ¼þËùÔÚÂ·¾¶
-	static const std::string banned_host_;                  //±»À¹½Ø×Ö·û´®
+	std::string host_path_;                                 //æ–‡ä»¶æ‰€åœ¨è·¯å¾„
+	static const std::string banned_host_;                  //è¢«æ‹¦æˆªå­—ç¬¦ä¸²
 	std::unordered_map<std::string, std::string> host_map_; // <host_name, ip_addr>
 };

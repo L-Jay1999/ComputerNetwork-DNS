@@ -54,11 +54,11 @@ struct DNSPacket
 	void PrintRawData();                                            
 	void PrintPacket();                                             
 
-	sockaddr_in from{};                                             //±¨ÎÄµÄsockaddrĞÅÏ¢
-	QueueData raw_data{};                                           //±¨ÎÄµÄÔ­Ê¼Êı¾İ
-	DNSHeader header{};                                             //±¨ÎÄµÄÍ·²¿
-	std::unique_ptr<DNSQuery[]> query;                              //±¨ÎÄµÄÑ¯ÎÊ²¿·Ö
-	std::unique_ptr<DNSAnswer[]> answer;                            //±¨ÎÄµÄ»Ø´ğ²¿·Ö
+	sockaddr_in from{};                                             //æŠ¥æ–‡çš„sockaddrä¿¡æ¯
+	QueueData raw_data{};                                           //æŠ¥æ–‡çš„åŸå§‹æ•°æ®
+	DNSHeader header{};                                             //æŠ¥æ–‡çš„å¤´éƒ¨
+	std::unique_ptr<DNSQuery[]> query;                              //æŠ¥æ–‡çš„è¯¢é—®éƒ¨åˆ†
+	std::unique_ptr<DNSAnswer[]> answer;                            //æŠ¥æ–‡çš„å›ç­”éƒ¨åˆ†
 
 	void CopyToCSTR(const std::string &str, char *buffer, int &ptr);
 
