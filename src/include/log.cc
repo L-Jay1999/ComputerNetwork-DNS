@@ -8,6 +8,7 @@
 #include <ctime>
 #include <string>
 #include <atomic>
+#include <cerrno>
 
 #include "log.h"
 static const std::string log_dir = "./";
@@ -26,7 +27,7 @@ void Log::InitLog(const int debug_level)
 		std::stringstream ss;
 		std::time_t current_time = std::time(nullptr);
 		std::tm time_pack;
-		auto error_code = localtime_s(&time_pack, &current_time);
+		localtime_s(&time_pack, &current_time);
 
 		ss << std::put_time(&time_pack, "%d-%H%M%S");
 		std::string log_name = ss.str();
@@ -61,7 +62,7 @@ void Log::WriteLog(const int level, const std::string &log)
 		std::string timestamp, current_thread_id, log_id_str;
 		std::time_t current_time = std::time(nullptr);
 		std::tm time_pack;
-		auto error_code = localtime_s(&time_pack, &current_time);
+		localtime_s(&time_pack, &current_time);
 
 		log_id_str = std::to_string(log_id++) + "\t";
 
