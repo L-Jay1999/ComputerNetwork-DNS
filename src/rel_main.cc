@@ -57,25 +57,25 @@ void checkparameters(const int argc, const char *argv[], std::string &host_path,
 			}
 			else
 			{
-				if (_access(parameter.c_str(), 0) != -1) 	// 当前输入为文件名
+				if (_access(parameter.c_str(), 0) != -1) // 当前输入为文件名
 				{
 					//std::cout << parameter << std::endl;
 					if (path_flag)
 					{
-						host_path = parameter; 	// 修改配置文件名
+						host_path = parameter; // 修改配置文件名
 						path_flag = false;
 					}
 				}
 				else //当前输入字符串为域名
 				{
 					char buffer[8];
-					auto ip_test = inet_pton(AF_INET, parameter.c_str(), buffer);	// 将域名转化为地址结构体并存于buffer
-					if (ip_test == 1)											 	// 转化成功
+					auto ip_test = inet_pton(AF_INET, parameter.c_str(), buffer); // 将域名转化为地址结构体并存于buffer
+					if (ip_test == 1)											  // 转化成功
 					{
 						//std::cout << parameter << std::endl;
 						if (ip_flag)
 						{
-							superior_server_addr = parameter;	// 修改使用的服务器名
+							superior_server_addr = parameter; // 修改使用的服务器名
 							ip_flag = false;
 						}
 					}
@@ -92,24 +92,24 @@ void checkparameters(const int argc, const char *argv[], std::string &host_path,
 
 int main(const int argc, const char *argv[])
 {
-	if (argc > 4)	// 当命令语句超过3段时输入出现问题直接返回 命令语法最长为dnsrelay [-d | -dd] [dns-server-ipaddr] [filename]
+	if (argc > 4) // 当命令语句超过3段时输入出现问题直接返回 命令语法最长为dnsrelay [-d | -dd] [dns-server-ipaddr] [filename]
 
 		return 0;
 
-	std::string host_path = "../data/hosts.txt";	// 默认配置文件名
-	std::string superior_server_addr = "10.3.9.4";	// 设置默认使用服务器为本地局域网
+	std::string host_path = "../data/hosts.txt";   // 默认配置文件名
+	std::string superior_server_addr = "10.3.9.4"; // 设置默认使用服务器为本地局域网
 
-	checkparameters(argc, argv, host_path, superior_server_addr);	// 就命令行输入视情况对配置文件名和服务器进行修改
+	checkparameters(argc, argv, host_path, superior_server_addr); // 就命令行输入视情况对配置文件名和服务器进行修改
 
 	// 日志输出当前使用配置文件与服务器
 	Log::WriteLog(2, __s("host file path: ") + host_path);
 	Log::WriteLog(2, __s("supervisor dns server address: ") + superior_server_addr);
 
-	HostList host_list(host_path);	// 加载配置文件
+	HostList host_list(host_path); // 加载配置文件
 	JobQueue job_queue;
 	MyMap my_map;
 
-	std::thread r(recv_t, &job_queue);	// 接收数据包的线程
+	std::thread r(recv_t, &job_queue); // 接收数据包的线程
 	Sleep(100);
 
 	constexpr int sender_num = 32;
