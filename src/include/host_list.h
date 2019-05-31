@@ -16,6 +16,7 @@ public:
 	HostList(const std::string &path = "hosts.txt");
 	HostState get_host_state(const std::string &host_name) const;
 	std::string get_ip_str(const std::string &host_name) const;
+
 private:
 	bool Load(const std::string &path);
 	std::string host_path_;
