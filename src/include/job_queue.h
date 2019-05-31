@@ -13,6 +13,7 @@ class JobQueue
 {
 public:
 	JobQueue() = default;
+	//将packet置入工作队列
 	void Push(const QueueData &packet);
 	void Bind(DNSSender *sender);// 将给定的sender与某一队列绑定, 之后直接从绑定后的队列Pop即可
 

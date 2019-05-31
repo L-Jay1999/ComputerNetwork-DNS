@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <deque>
 #include <mutex>
@@ -13,7 +13,9 @@ class MyQueue
 public:
 	MyQueue() = default;
 
+	//将qdata压入data_queue_队列
 	void push_back(const QueueData &qdata);
+	//将data_queue_队列第一个个体弹出并返回
 	QueueData pop_front();
 
 private:
