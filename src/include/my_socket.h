@@ -3,6 +3,7 @@
 
 #include <WS2tcpip.h>
 #include <WinSock2.h>
+
 #pragma comment(lib, "Ws2_32.lib")
 
 enum SocketType
@@ -24,8 +25,7 @@ public:
 	MySocket &operator=(const MySocket &soc) = delete;
 	~MySocket();
 
-	// 从指定端口接收数据,返回一个QueueData(需要自行管理内存)
-	QueueData RecvFrom();
+	QueueData RecvFrom();// 从指定端口接收数据,返回一个QueueData(需要自行管理内存)
 
 	bool SendTo(const QueueData &queue_data);
 
@@ -46,8 +46,7 @@ private:
 
 	DWORD InitSock(SocketType soc_type, const char *port, const std::string &superior_dns);
 
-	// 从指定端口接收数据,对传入的空QueueData初始化,返回错误信息
-	DWORD _RecvFrom(QueueData &queue_data);
+	DWORD _RecvFrom(QueueData &queue_data);// 从指定端口接收数据,对传入的空QueueData初始化,返回错误信息
 	DWORD _SendTo(const QueueData &queue_data);
 
 	DWORD last_error_ = 0;

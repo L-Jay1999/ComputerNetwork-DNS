@@ -30,16 +30,15 @@ public:
 	void Responce();                            
 
 private:
-	JobQueue *job_queue_ = nullptr; // 从该队列中取出数据并处理发送
-	MyQueue *data_queue_ = nullptr; // 将数据复制到该结构中
+	JobQueue *job_queue_ = nullptr; 
+	MyQueue *data_queue_ = nullptr; 
 	HostList *host_list_ = nullptr; // 对照表
 
-	MySocket sockSend_;             // 质询socket
-	MySocket sockQuest_;            //
+	MySocket sockSend_;
+	MySocket sockQuest_;
 
-	std::string address_;           // 上级dns服务器地址
-	MyMap *my_map_ = nullptr;
-	DNSPacket dns_packet_;
+	std::string address_;           // 上级dns服务器地址  
+	DNSPacket dns_packet_;          // 将数据放到该结构体
 
 	void set_reply(const std::string &ip);
 	void send_to_client();
