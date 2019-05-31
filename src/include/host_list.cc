@@ -1,4 +1,4 @@
-#include <string>
+﻿#include <string>
 #include <fstream>
 #include <iostream>
 
@@ -38,18 +38,19 @@ std::string HostList::get_ip_str(const std::string &host_name) const
 
 bool HostList::Load(const std::string &path)
 {
-	std::ifstream stream(path);
-	if (stream)
+	std::ifstream stream(path);//创立文件输入流
+	if (stream)//创建成功
 	{
 		host_path_ = path;
 		std::string host_ip, host_name;
 		while (stream)
 		{
+			//文件每行记录以 ip地址+网址名 的方式给出
 			stream >> host_ip;
 			stream >> host_name;
 			//std::cout << data[0] << " " << data[1] << std::endl;
 			if (stream)
-				host_map_.insert({host_name, host_ip});
+				host_map_.insert({host_name, host_ip});//向创建的map中插入关联组<网址名,ip地址>
 		}
 		return true;
 	}
