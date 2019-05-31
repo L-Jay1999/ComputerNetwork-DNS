@@ -1,4 +1,4 @@
-﻿#include <deque>
+#include <deque>
 #include <mutex>
 #include <utility>
 #include <condition_variable>
