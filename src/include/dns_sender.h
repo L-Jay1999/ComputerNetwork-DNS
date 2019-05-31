@@ -38,8 +38,8 @@ private:
 	MySocket sockSend_;
 	MySocket sockQuest_;
 
-	std::string address_;           // 上级dns服务器地址
-	DNSPacket dns_packet_;          // 将数据放到该结构体
+	std::string address_;  // 上级dns服务器地址
+	DNSPacket dns_packet_; // 将数据放到该结构体
 
 	void set_reply(const std::string &ip);
 	void send_to_client();

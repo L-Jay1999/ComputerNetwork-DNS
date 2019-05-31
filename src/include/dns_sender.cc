@@ -150,6 +150,6 @@ void DNSSender::send_to_client()
 
 void DNSSender::send_to_client(const sockaddr_in &addr)
 {
-	dns_packet_.raw_data.addr = addr;			// 将目的地址修改为上级地址
+	dns_packet_.raw_data.addr = addr;		// 将目的地址修改为上级地址
 	sockSend_.SendTo(dns_packet_.raw_data); // 在socket上写入传出数据raw_data
 }

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <deque>
 #include <mutex>
@@ -20,7 +20,7 @@ public:
 
 private:
 	std::deque<QueueData> data_queue_{}; //数据队列
-	std::mutex mutex_;                   //同步锁
+	std::mutex mutex_;					 //同步锁
 	std::condition_variable cond_;
 	int size_ = 0;
 };

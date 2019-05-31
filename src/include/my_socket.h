@@ -25,7 +25,7 @@ public:
 	MySocket &operator=(const MySocket &soc) = delete;
 	~MySocket();
 
-	QueueData RecvFrom();// 从指定端口接收数据,返回一个QueueData(需要自行管理内存)
+	QueueData RecvFrom(); // 从指定端口接收数据,返回一个QueueData(需要自行管理内存)
 
 	//将queue_data内的数据queue_data.data向地址为queue_data.addr的目标传送
 	bool SendTo(const QueueData &queue_data);
@@ -47,7 +47,7 @@ private:
 
 	DWORD InitSock(SocketType soc_type, const char *port, const std::string &superior_dns);
 
-	DWORD _RecvFrom(QueueData &queue_data);// 从指定端口接收数据,对传入的空QueueData初始化,返回错误信息
+	DWORD _RecvFrom(QueueData &queue_data); // 从指定端口接收数据,对传入的空QueueData初始化,返回错误信息
 	DWORD _SendTo(const QueueData &queue_data);
 
 	DWORD last_error_ = 0;
@@ -56,7 +56,7 @@ private:
 	SocketType sock_type_;
 	SOCKET sock_ = INVALID_SOCKET;
 	sockaddr_in my_addr_info_;
-	sockaddr_in superior_server_addr_;     //上级DNS信息
+	sockaddr_in superior_server_addr_; //上级DNS信息
 	int my_addr_info_size_ = sizeof(my_addr_info_);
 	sockaddr_in from_;
 	int from_len_ = sizeof(from_);

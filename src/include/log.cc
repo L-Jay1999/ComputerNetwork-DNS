@@ -15,10 +15,10 @@ static const std::string log_ext = ".log";
 static std::string log_path;
 
 static bool is_init = false;
-static std::mutex write_mtx_;	// 避免流失去同步
+static std::mutex write_mtx_; // 避免流失去同步
 static std::ofstream log_ofs;
 
-static int dbg_level = 0;	// 0时不输出
+static int dbg_level = 0; // 0时不输出
 static int log_id = 0;
 
 void Log::InitLog(const int debug_level)
