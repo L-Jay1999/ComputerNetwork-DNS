@@ -57,6 +57,7 @@ public:
 	DNSPacket &operator=(const DNSPacket &rhs) = delete;
 	~DNSPacket() = default;
 
+	
 	bool Parse(const QueueData &raw_packet);
 	bool to_packet();
 	void PrintRawData();
