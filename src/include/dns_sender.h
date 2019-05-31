@@ -22,7 +22,9 @@ public:
 	DNSSender(const DNSSender *other) = delete;
 	~DNSSender() = default;
 
+	//开始运行
 	void Start();
+	//从工作队列获取一个报文
 	void set_packet();
 
 	// 供job_queue分配

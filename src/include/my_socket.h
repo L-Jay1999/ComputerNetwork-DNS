@@ -27,10 +27,11 @@ public:
 	// 从指定端口接收数据,返回一个QueueData(需要自行管理内存)
 	QueueData RecvFrom();
 
+	//将queue_data内的数据queue_data.data向地址为queue_data.addr的目标传送
 	bool SendTo(const QueueData &queue_data);
-
+	//设置接收定时器以判定是否超时
 	bool set_recv_timeout(const int ms);
-
+	//将my_addr_info_.sin_family转换为点十进制表示法ip地址并存于buffer
 	std::string get_ip_recver_str() const
 	{
 		static char buffer[20];

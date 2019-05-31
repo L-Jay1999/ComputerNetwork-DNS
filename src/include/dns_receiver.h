@@ -13,6 +13,7 @@ public:
 	DNSReceiver(const DNSReceiver &other) = delete;
 	~DNSReceiver() = default;
 
+	//开始接收数据包并将其放到工作队列
 	void Start();
 	void set_queue(JobQueue *queue) noexcept { job_queue_ = queue; }
 
