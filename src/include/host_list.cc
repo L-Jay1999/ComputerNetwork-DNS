@@ -1,4 +1,4 @@
-﻿#include <string>
+#include <string>
 #include <fstream>
 #include <iostream>
 
@@ -23,7 +23,7 @@ HostState HostList::get_host_state(const std::string &host_name) const
 {
 	auto iter = host_map_.find(host_name); //在提供的配置文件生成的表中查询是否有传入变量名（Q.NAME）
 
-	if (iter == host_map_.end()) //到末尾，并未查询到
+	if (iter == host_map_.end())           //到末尾，并未查询到
 		return NOT_FIND;
 	else if (iter->second == banned_host_) //查询到但域名为0.0.0.0
 		return BANNED;
@@ -48,7 +48,7 @@ bool HostList::Load(const std::string &path)
 			//文件每行记录以 ip地址+网址名 的方式给出
 			stream >> host_ip;
 			stream >> host_name;
-			//std::cout << data[0] << " " << data[1] << std::endl;
+			//std::cout << host_ip << " " << host_name << std::endl;
 			if (stream)
 				host_map_.insert({host_name, host_ip}); //向创建的map中插入关联组<网址名,ip地址>
 		}
@@ -57,7 +57,6 @@ bool HostList::Load(const std::string &path)
 	else
 	{
 		Log::WriteLog(1, __s(" host list cannot open host file: ") + path);
-		// log write std::cout << "open error!" << std::endl;
 		return false;
 	}
 }

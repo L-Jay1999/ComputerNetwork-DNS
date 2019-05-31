@@ -25,7 +25,6 @@
     <ClCompile Include="..\..\src\include\host_list.cc" />
     <ClCompile Include="..\..\src\include\job_queue.cc" />
     <ClCompile Include="..\..\src\include\log.cc" />
-    <ClCompile Include="..\..\src\include\my_map.cc" />
     <ClCompile Include="..\..\src\include\my_queue.cc" />
     <ClCompile Include="..\..\src\include\my_socket.cc" />
     <ClCompile Include="..\..\src\rel_main.cc" />
@@ -37,7 +36,6 @@
     <ClInclude Include="..\..\src\include\host_list.h" />
     <ClInclude Include="..\..\src\include\job_queue.h" />
     <ClInclude Include="..\..\src\include\log.h" />
-    <ClInclude Include="..\..\src\include\my_map.h" />
     <ClInclude Include="..\..\src\include\my_queue.h" />
     <ClInclude Include="..\..\src\include\my_socket.h" />
   </ItemGroup>
@@ -48,7 +46,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{9C6D4445-EEA5-420E-B196-3429ABAA2855}</ProjectGuid>
     <RootNamespace>ComputerNetwork</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

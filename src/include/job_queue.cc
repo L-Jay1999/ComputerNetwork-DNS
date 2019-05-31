@@ -1,4 +1,4 @@
-﻿#include <mutex>
+#include <mutex>
 #include <map>
 #include <random>
 #include <condition_variable>

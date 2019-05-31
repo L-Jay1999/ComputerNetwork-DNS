@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <string>
 #include <deque>
 #include <mutex>
@@ -18,30 +18,27 @@ class DNSSender
 {
 public:
 	DNSSender() = delete;
-	explicit DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string &address);
+	explicit DNSSender(JobQueue *job_queue, HostList *host_list, const std::string &address);
 	DNSSender(const DNSSender *other) = delete;
 	~DNSSender() = default;
 
-	void Start();
+	void Start();                               
 	void set_packet();
+	
+	void set_queue(MyQueue *queue) noexcept;    
 
-	// 供job_queue分配
-	void set_queue(MyQueue *queue) noexcept;
-
-	// 响应
-	void Responce();
+	void Responce();                            
 
 private:
-	JobQueue *job_queue_ = nullptr;
-	MyQueue *data_queue_ = nullptr; // 从该队列中取出数据并处理发送
-	HostList *host_list_ = nullptr;
+	JobQueue *job_queue_ = nullptr; // 控制器
+	MyQueue *data_queue_ = nullptr; // 工作队列
+	HostList *host_list_ = nullptr; // 对照表
 
 	MySocket sockSend_;
 	MySocket sockQuest_;
 
-	std::string address_; // 上级dns服务器地址
-	MyMap *my_map_ = nullptr;
-	DNSPacket dns_packet_;
+	std::string address_;           // 上级dns服务器地址  
+	DNSPacket dns_packet_;          // 将数据放到该结构体
 
 	void set_reply(const std::string &ip);
 	void send_to_client();

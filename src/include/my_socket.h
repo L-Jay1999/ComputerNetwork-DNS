@@ -1,8 +1,9 @@
-﻿#pragma once
+#pragma once
 #include <string>
 
 #include <WS2tcpip.h>
 #include <WinSock2.h>
+
 #pragma comment(lib, "Ws2_32.lib")
 
 enum SocketType
@@ -24,8 +25,7 @@ public:
 	MySocket &operator=(const MySocket &soc) = delete;
 	~MySocket();
 
-	// 从指定端口接收数据,返回一个QueueData(需要自行管理内存)
-	QueueData RecvFrom();
+	QueueData RecvFrom();// 从指定端口接收数据,返回一个QueueData(需要自行管理内存)
 
 	bool SendTo(const QueueData &queue_data);
 
@@ -42,12 +42,11 @@ public:
 	sockaddr_in get_superior_server() const noexcept { return superior_server_addr_; }
 
 private:
-	static constexpr int recvbuflen_ = 512;
+	static constexpr int recvbuflen_ = 512; // 默认缓冲区大小
 
 	DWORD InitSock(SocketType soc_type, const char *port, const std::string &superior_dns);
 
-	// 从指定端口接收数据,对传入的空QueueData初始化,返回错误信息
-	DWORD _RecvFrom(QueueData &queue_data);
+	DWORD _RecvFrom(QueueData &queue_data);// 从指定端口接收数据,对传入的空QueueData初始化,返回错误信息
 	DWORD _SendTo(const QueueData &queue_data);
 
 	DWORD last_error_ = 0;
@@ -56,7 +55,7 @@ private:
 	SocketType sock_type_;
 	SOCKET sock_ = INVALID_SOCKET;
 	sockaddr_in my_addr_info_;
-	sockaddr_in superior_server_addr_;
+	sockaddr_in superior_server_addr_;     //上级DNS信息
 	int my_addr_info_size_ = sizeof(my_addr_info_);
 	sockaddr_in from_;
 	int from_len_ = sizeof(from_);

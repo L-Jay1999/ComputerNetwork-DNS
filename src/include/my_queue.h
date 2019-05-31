@@ -1,4 +1,4 @@
-ï»¿#pragma once
+#pragma once
 
 #include <deque>
 #include <mutex>
@@ -17,8 +17,8 @@ public:
 	QueueData pop_front();
 
 private:
-	std::deque<QueueData> data_queue_{};
-	std::mutex mutex_;
+	std::deque<QueueData> data_queue_{}; //Êý¾Ý¶ÓÁÐ
+	std::mutex mutex_;                   //Í¬²½Ëø
 	std::condition_variable cond_;
 	int size_ = 0;
 };

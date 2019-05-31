@@ -1,4 +1,4 @@
-ï»¿#pragma once
+#pragma once
 #include <string>
 #include <iostream>
 #include <cstdio>
@@ -49,16 +49,16 @@ struct DNSPacket
 	DNSPacket &operator=(const DNSPacket &rhs) = delete;
 	~DNSPacket() = default;
 
-	bool Parse(const QueueData &raw_packet);
-	bool to_packet();
-	void PrintRawData();
-	void PrintPacket();
+	bool Parse(const QueueData &raw_packet);                        
+	bool to_packet();                                               
+	void PrintRawData();                                            
+	void PrintPacket();                                             
 
-	sockaddr_in from{};
-	QueueData raw_data{};
-	DNSHeader header{};
-	std::unique_ptr<DNSQuery[]> query;
-	std::unique_ptr<DNSAnswer[]> answer;
+	sockaddr_in from{};                                             //±¨ÎÄµÄsockaddrÐÅÏ¢
+	QueueData raw_data{};                                           //±¨ÎÄµÄÔ­Ê¼Êý¾Ý
+	DNSHeader header{};                                             //±¨ÎÄµÄÍ·²¿
+	std::unique_ptr<DNSQuery[]> query;                              //±¨ÎÄµÄÑ¯ÎÊ²¿·Ö
+	std::unique_ptr<DNSAnswer[]> answer;                            //±¨ÎÄµÄ»Ø´ð²¿·Ö
 
 	void CopyToCSTR(const std::string &str, char *buffer, int &ptr);
 
