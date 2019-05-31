@@ -8,7 +8,6 @@
 #include "include/my_socket.h"
 #include "include/host_list.h"
 #include "include/job_queue.h"
-#include "include/my_map.h"
 #include "include/log.h"
 
 void recv_t(JobQueue *job_queue)

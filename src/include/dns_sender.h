@@ -10,7 +10,6 @@
 #include "my_socket.h"
 #include "dns_packet.h"
 #include "host_list.h"
-#include "my_map.h"
 
 class MyQueue;
 class JobQueue;
