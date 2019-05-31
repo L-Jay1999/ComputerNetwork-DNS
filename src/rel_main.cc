@@ -1,4 +1,4 @@
-#include <thread>
+﻿#include <thread>
 #include <io.h>
 #include <cctype>
 
@@ -81,7 +81,6 @@ void checkparameters(const int argc, const char *argv[], std::string &host_path,
 					}
 					else
 					{
-						//log
 						std::cout << "error:" << parameter << std::endl;
 					}
 				}
