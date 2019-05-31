@@ -18,6 +18,7 @@ public:
 	void Bind(DNSSender *sender);
 private:
 	static constexpr int group_size_ = 256;
+
 	std::atomic<int> pos_ = 0;
 	int push_pos_ = 0;
 	MyQueue queue_group_[group_size_];

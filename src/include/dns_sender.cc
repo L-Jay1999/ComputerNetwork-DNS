@@ -22,7 +22,7 @@ static int get_quest_port_random()
 }
 
 DNSSender::DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string &address)
-	: job_queue_(job_queue), host_list_(host_list), my_map_(my_map), address_(address), sockSend_(SEND_SOCKET, "53", address), sockQuest_(QUEST_SOCKET, std::to_string(get_quest_port_random()).c_str(), address)
+	: job_queue_(job_queue), host_list_(host_list), my_map_(my_map), address_(address), sockSend_(SEND_SOCKET, "53", address), sockQuest_(QUEST_SOCKET, std::to_string(get_quest_port_random()).c_str(), "")
 {
 	job_queue_->Bind(this);
 	sockQuest_.set_recv_timeout(1000);
@@ -43,7 +43,7 @@ void DNSSender::set_packet()
 	dns_packet_.Parse(temp_qdata);
 }
 
-void DNSSender::set_queue(MyQueue *data_queue)
+void DNSSender::set_queue(MyQueue *data_queue) noexcept
 {
 	data_queue_ = data_queue;
 }
@@ -74,6 +74,10 @@ void DNSSender::Responce()
 			sockaddr_in temp = dns_packet_.raw_data.addr;
 
 			int resend = 0;
+			int ptr = 0;
+			auto id_expected = dns_packet_.header.ID;
+			decltype(id_expected) id_recv;
+			DNSPacket temp_dns_packet;
 			QueueData temp_packet;
 
 			dns_packet_.raw_data.addr = sockSend_.get_superior_server();
@@ -84,13 +88,26 @@ void DNSSender::Responce()
 
 				temp_packet = sockQuest_.RecvFrom();
 				if (temp_packet.len)
-					break;
+				{
+					temp_dns_packet.ReadFromCSTR(id_recv, temp_packet.data, ptr);
+					if (id_recv == id_expected)
+					{
+						break;
+					}
+					else
+					{
+						ptr = 0;
+						Log::WriteLog(2, __s("Sender recv answer with wrong id"));
+						continue;
+					}
+				}
 				else if (resend > 1)
 					return;
 				else
 					resend++;
 			}
 			temp_packet.addr = temp;
+
 			if (!sockSend_.SendTo(temp_packet))
 				Log::WriteLog(2, __s("Sender send to client failed, ErrorCode: ") + std::to_string(WSAGetLastError()));
 			else

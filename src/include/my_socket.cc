@@ -73,7 +73,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 
 	//建立并配置addrinfo结构用于getaddrinfo函数
 	addrinfo hint, *result = nullptr;
-	
+
 	ZeroMemory(&hint, sizeof(hint));
 	hint.ai_family = AF_INET;
 	hint.ai_socktype = SOCK_DGRAM;
