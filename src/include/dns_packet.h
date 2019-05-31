@@ -7,10 +7,6 @@
 
 #include <WinSock2.h>
 #pragma comment(lib, "Ws2_32.lib")
-// DNSHeader
-// DNSQuery
-// DNSAnswer
-// ......
 
 struct DNSHeader
 {
@@ -43,15 +39,11 @@ struct QueueData
 {
 	int len;
 	char data[1024];
-	//std::string data;
 	sockaddr_in addr;
 };
 
 struct DNSPacket
 {
-private:
-
-public:
 	DNSPacket() = default;
 	DNSPacket(const DNSPacket &other) = delete;
 	DNSPacket &operator=(const DNSPacket &rhs) = delete;
@@ -71,6 +63,12 @@ public:
 
 	void CopyToCSTR(const std::string &str, char *buffer, int &ptr);
 
-	template<typename T>
+	template <typename T>
 	void CopyToCSTR(const T val, char *buffer, int &ptr);
+
+	template <typename T>
+	static void ReadFromCSTR(T &dest, const char *src, int &ptr);
+
+	void ReadFromCSTR(char *dest, const unsigned len, const char *src, int &ptr);
+	void ReadFromCSTR(std::string &dest, const unsigned len, const char *src, int &ptr);
 };

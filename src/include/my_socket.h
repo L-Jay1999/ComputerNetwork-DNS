@@ -36,10 +36,10 @@ public:
 		static char buffer[20];
 		return std::string(inet_ntop(my_addr_info_.sin_family, &(my_addr_info_.sin_addr), buffer, 20));
 	}
-	unsigned short get_port_recver() const { return my_addr_info_.sin_port; }
+	unsigned short get_port_recver() const noexcept { return my_addr_info_.sin_port; }
 	std::string get_port_recver_str() const { return std::to_string(htons(my_addr_info_.sin_port)); }
 
-	sockaddr_in get_superior_server() const { return superior_server_addr_; }
+	sockaddr_in get_superior_server() const noexcept { return superior_server_addr_; }
 
 private:
 	static constexpr int recvbuflen_ = 512;

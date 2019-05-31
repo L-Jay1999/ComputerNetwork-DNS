@@ -26,7 +26,7 @@ public:
 	void set_packet();
 
 	// 供job_queue分配
-	void set_queue(MyQueue *queue);
+	void set_queue(MyQueue *queue) noexcept;
 
 	// 响应
 	void Responce();
@@ -36,7 +36,6 @@ private:
 	MyQueue *data_queue_ = nullptr; // 从该队列中取出数据并处理发送
 	HostList *host_list_ = nullptr;
 
-	//MySocket sockSend_{SEND_SOCKET};	 // 发送
 	MySocket sockSend_;
 	MySocket sockQuest_;
 
