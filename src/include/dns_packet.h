@@ -62,11 +62,11 @@ struct DNSPacket
 
 	void CopyToCSTR(const std::string &str, char *buffer, int &ptr);
 
-	template<typename T>
+	template <typename T>
 	void CopyToCSTR(const T val, char *buffer, int &ptr);
 
-	template<typename T>
-	static void ReadFromCSTR(T &dest, const  char *src, int &ptr);
+	template <typename T>
+	static void ReadFromCSTR(T &dest, const char *src, int &ptr);
 
 	void ReadFromCSTR(char *dest, const unsigned len, const char *src, int &ptr);
 	void ReadFromCSTR(std::string &dest, const unsigned len, const char *src, int &ptr);

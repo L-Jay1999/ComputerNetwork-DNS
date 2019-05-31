@@ -14,7 +14,7 @@ public:
 	~DNSReceiver() = default;
 
 	void Start();
-	void set_queue(JobQueue *queue)	noexcept { job_queue_ = queue; }
+	void set_queue(JobQueue *queue) noexcept { job_queue_ = queue; }
 
 private:
 	JobQueue *job_queue_ = nullptr;
