@@ -1,4 +1,4 @@
-﻿#include <random>
+#include <random>
 #include <cstring>
 
 #include <Winsock2.h>

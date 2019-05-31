@@ -1,4 +1,4 @@
-﻿#include "dns_receiver.h"
+#include "dns_receiver.h"
 #include "job_queue.h"
 void DNSReceiver::Start()
 {
