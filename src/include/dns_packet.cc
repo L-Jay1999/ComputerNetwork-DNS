@@ -226,7 +226,7 @@ bool DNSPacket::to_packet()
 		}
 	}
 	//raw_data.data[p_question] = '\0';
-	raw_data.addr = from;
+	raw_data.addr = from;//目的地址默认为源地址（即用户）
 	raw_data.len = ptr;
 	//raw_data.len = raw_data.data.length();
 	return true;
