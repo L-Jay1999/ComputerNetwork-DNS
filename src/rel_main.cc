@@ -93,7 +93,6 @@ void checkparameters(const int argc, const char *argv[], std::string &host_path,
 int main(const int argc, const char *argv[])
 {
 	if (argc > 4) // 当命令语句超过3段时输入出现问题直接返回 命令语法最长为dnsrelay [-d | -dd] [dns-server-ipaddr] [filename]
-
 		return 0;
 
 	std::string host_path = "../data/hosts.txt";   // 默认配置文件名
@@ -119,16 +118,11 @@ int main(const int argc, const char *argv[])
 		sender_vec.push_back(std::thread(sender_t, &job_queue, &host_list, &my_map, superior_server_addr));
 	}
 
-	// std::thread s(so, &job_queue, &host_list, &my_map);
-	// std::thread s1(so, &job_queue, &host_list, &my_map);
-
 	for (auto &t : sender_vec)
 	{
 		t.join();
 	}
 
-	// s.join();
-	// s1.join();
 	r.join();
 	Log::CloseLog();
 	return 0;
