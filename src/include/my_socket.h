@@ -42,7 +42,7 @@ public:
 	sockaddr_in get_superior_server() const noexcept { return superior_server_addr_; }
 
 private:
-	static constexpr int recvbuflen_ = 512;
+	static constexpr int recvbuflen_ = 512; // 默认缓冲区大小
 
 	DWORD InitSock(SocketType soc_type, const char *port, const std::string &superior_dns);
 
@@ -55,7 +55,7 @@ private:
 	SocketType sock_type_;
 	SOCKET sock_ = INVALID_SOCKET;
 	sockaddr_in my_addr_info_;
-	sockaddr_in superior_server_addr_;
+	sockaddr_in superior_server_addr_;     //上级DNS信息
 	int my_addr_info_size_ = sizeof(my_addr_info_);
 	sockaddr_in from_;
 	int from_len_ = sizeof(from_);

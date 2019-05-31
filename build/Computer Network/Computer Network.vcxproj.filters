@@ -39,9 +39,6 @@
     <ClCompile Include="..\..\src\rel_main.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\include\my_map.cc">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\include\log.cc">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -69,9 +66,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\include\my_socket.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\include\my_map.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

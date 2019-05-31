@@ -21,8 +21,8 @@ static int get_quest_port_random()
 	return uid(rd);
 }
 
-DNSSender::DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string &address)
-	: job_queue_(job_queue), host_list_(host_list), my_map_(my_map), address_(address), sockSend_(SEND_SOCKET, "53", address), sockQuest_(QUEST_SOCKET, std::to_string(get_quest_port_random()).c_str(), "")
+DNSSender::DNSSender(JobQueue *job_queue, HostList *host_list, const std::string &address)
+	: job_queue_(job_queue), host_list_(host_list), address_(address), sockSend_(SEND_SOCKET, "53", address), sockQuest_(QUEST_SOCKET, std::to_string(get_quest_port_random()).c_str(), "")
 {
 	job_queue_->Bind(this);
 	sockQuest_.set_recv_timeout(1000);
@@ -145,18 +145,11 @@ void DNSSender::set_reply(const std::string &ip)
 
 void DNSSender::send_to_client()
 {
-	if (sockSend_.SendTo(dns_packet_.raw_data)) // 在socket上写入传出数据raw_data
-	{
-		//log
-	}
-	else
-	{
-		//log
-	}
+	sockSend_.SendTo(dns_packet_.raw_data); // 在socket上写入传出数据raw_data
 }
 
 void DNSSender::send_to_client(const sockaddr_in &addr)
 {
 	dns_packet_.raw_data.addr = addr;			// 将目的地址修改为上级地址
-	sockSend_.SendTo(dns_packet_.raw_data) // 在socket上写入传出数据raw_data
+	sockSend_.SendTo(dns_packet_.raw_data); // 在socket上写入传出数据raw_data
 }

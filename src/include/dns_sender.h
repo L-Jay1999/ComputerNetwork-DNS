@@ -18,7 +18,7 @@ class DNSSender
 {
 public:
 	DNSSender() = delete;
-	explicit DNSSender(JobQueue *job_queue, HostList *host_list, MyMap *my_map, const std::string &address);
+	explicit DNSSender(JobQueue *job_queue, HostList *host_list, const std::string &address);
 	DNSSender(const DNSSender *other) = delete;
 	~DNSSender() = default;
 
@@ -30,8 +30,8 @@ public:
 	void Responce();                            
 
 private:
-	JobQueue *job_queue_ = nullptr; 
-	MyQueue *data_queue_ = nullptr; 
+	JobQueue *job_queue_ = nullptr; // 控制器
+	MyQueue *data_queue_ = nullptr; // 工作队列
 	HostList *host_list_ = nullptr; // 对照表
 
 	MySocket sockSend_;
