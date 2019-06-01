@@ -64,8 +64,10 @@ void DNSSender::Responce()
 		}
 		else if (state == BANNED)
 		{
+			int ptr = 0;
 			Log::WriteLog(1, __s("Sender host is banned"));
 			set_reply("0.0.0.0"); // 将dns包的answer设置0.0.0.0
+			dns_packet_.CopyToCSTR((unsigned short)0x8183, dns_packet_.raw_data, ptr);
 			send_to_client();
 		}
 		else
@@ -102,7 +104,10 @@ void DNSSender::Responce()
 					}
 				}
 				else if (resend > 1)
+				{
+					Log::WriteLog(1, __s("server no responce"));
 					return;
+				}
 				else
 					resend++;
 			}
@@ -150,6 +155,6 @@ void DNSSender::send_to_client()
 
 void DNSSender::send_to_client(const sockaddr_in &addr)
 {
-	dns_packet_.raw_data.addr = addr;			// 将目的地址修改为上级地址
+	dns_packet_.raw_data.addr = addr;		// 将目的地址修改为上级地址
 	sockSend_.SendTo(dns_packet_.raw_data); // 在socket上写入传出数据raw_data
 }

@@ -78,7 +78,8 @@ void checkparameters(const int argc, const char *argv[], std::string &host_path,
 							ip_flag = false;
 						}
 					}
-					else std::cout << "error:" << parameter << std::endl;
+					else
+						std::cout << "error:" << parameter << std::endl;
 				}
 			}
 		}
@@ -90,7 +91,7 @@ int main(const int argc, const char *argv[])
 	if (argc > 4) // 当命令语句超过3段时输入出现问题直接返回 命令语法最长为dnsrelay [-d | -dd] [dns-server-ipaddr] [filename]
 		return 0;
 
-	std::string host_path = "hosts.txt";   // 默认配置文件名
+	std::string host_path = "hosts.txt";		   // 默认配置文件名
 	std::string superior_server_addr = "10.3.9.4"; // 设置默认使用服务器为本地局域网
 
 	checkparameters(argc, argv, host_path, superior_server_addr); // 就命令行输入视情况对配置文件名和服务器进行修改
@@ -105,7 +106,7 @@ int main(const int argc, const char *argv[])
 	std::thread r(recv_t, &job_queue); // 接收数据包的线程
 	Sleep(100);
 
-	constexpr int sender_num = 32;
+	constexpr int sender_num = 8;
 	std::vector<std::thread> sender_vec;
 	for (int i = 0; i < sender_num; i++)
 	{

@@ -49,25 +49,35 @@ struct DNSPacket
 	DNSPacket &operator=(const DNSPacket &rhs) = delete;
 	~DNSPacket() = default;
 
-	bool Parse(const QueueData &raw_packet);                        
-	bool to_packet();                                               
-	void PrintRawData();                                            
-	void PrintPacket();                                             
+	//将raw_packet内的dns报文解析并分别读入
+	bool Parse(const QueueData &raw_packet);
 
-	sockaddr_in from{};                                             //���ĵ�sockaddr��Ϣ
-	QueueData raw_data{};                                           //���ĵ�ԭʼ����
-	DNSHeader header{};                                             //���ĵ�ͷ��
-	std::unique_ptr<DNSQuery[]> query;                              //���ĵ�ѯ�ʲ���
-	std::unique_ptr<DNSAnswer[]> answer;                            //���ĵĻش𲿷�
+	//将数据还原为dns报文并将地址等信息写入raw_data
+	bool to_packet();
+
+	//输出raw_data内储存的dns报文
+	void PrintRawData();
+
+	//输出解析完成的dns报文各部分表示的信息
+	void PrintPacket();
+
+	sockaddr_in from{};					 //报文的sockaddr信息
+	QueueData raw_data{};				 //报文的原始数据
+	DNSHeader header{};					 //报文的头部
+	std::unique_ptr<DNSQuery[]> query;   //报文的询问部分
+	std::unique_ptr<DNSAnswer[]> answer; //报文的回答部分
 
 	void CopyToCSTR(const std::string &str, char *buffer, int &ptr);
 
+	// 将val的内容以ptr为位置指针写入buffer
 	template <typename T>
 	void CopyToCSTR(const T val, char *buffer, int &ptr);
 
+	// 将src的内容以ptr为位置指针读入dest
 	template <typename T>
 	static void ReadFromCSTR(T &dest, const char *src, int &ptr);
 
+	// 将src的内容以ptr为位置指针读取之后len位的内容存入dest
 	void ReadFromCSTR(char *dest, const unsigned len, const char *src, int &ptr);
 	void ReadFromCSTR(std::string &dest, const unsigned len, const char *src, int &ptr);
 };

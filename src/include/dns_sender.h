@@ -21,12 +21,14 @@ public:
 	DNSSender(const DNSSender *other) = delete;
 	~DNSSender() = default;
 
-	void Start();                               
+	//开始运行
+	void Start();
+	//从工作队列获取一个报文
 	void set_packet();
-	
-	void set_queue(MyQueue *queue) noexcept;    
 
-	void Responce();                            
+	void set_queue(MyQueue *queue) noexcept;
+
+	void Responce();
 
 private:
 	JobQueue *job_queue_ = nullptr; // 控制器
@@ -36,8 +38,8 @@ private:
 	MySocket sockSend_;
 	MySocket sockQuest_;
 
-	std::string address_;           // 上级dns服务器地址  
-	DNSPacket dns_packet_;          // 将数据放到该结构体
+	std::string address_;  // 上级dns服务器地址
+	DNSPacket dns_packet_; // 将数据放到该结构体
 
 	void set_reply(const std::string &ip);
 	void send_to_client();
