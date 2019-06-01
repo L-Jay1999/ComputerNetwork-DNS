@@ -45,7 +45,7 @@ HostState HostList::get_host_state(const std::string & host_name, int net_type) 
 			{
 				return FIND;
 			}
-			else (!is_ipv6((*i).second) && net_type == 0)
+			else if (!is_ipv6((*i).second) && net_type == 0)
 			{
 				if ((*i).second == banned_host_)
 					return BANNED;
