@@ -7,7 +7,7 @@
 
 const std::string HostList::banned_host_ = "0.0.0.0";
 
-HostList::HostList(const std::string &path)
+HostList::HostList(const std::string& path)
 {
 	if (Load(path))
 	{
@@ -19,7 +19,7 @@ HostList::HostList(const std::string &path)
 	}
 }
 
-static bool is_ipv6(const std::string &str)
+static bool is_ipv6(const std::string& str)
 {
 	int p = 0;
 	for (auto c : str)
@@ -34,7 +34,7 @@ static bool is_ipv6(const std::string &str)
 	else return true;
 }
 
-HostState HostList::get_host_state(const std::string &host_name, int net_type) const
+HostState HostList::get_host_state(const std::string & host_name, int net_type) const
 {
 	auto iter = host_map_.find(host_name); //在提供的配置文件生成的表中查询是否有传入变量名（Q.NAME）
 	for (auto i = host_map_.begin(); i != host_map_.end(); ++i)
@@ -45,7 +45,7 @@ HostState HostList::get_host_state(const std::string &host_name, int net_type) c
 			{
 				return FIND;
 			}
-			else (!is_ipv6((*i).second) && net_type == 0)
+			else if (!is_ipv6((*i).second) && net_type == 0)
 			{
 				if ((*i).second == banned_host_)
 					return BANNED;
@@ -67,12 +67,12 @@ HostState HostList::get_host_state(const std::string &host_name, int net_type) c
 		*/
 }
 
-std::string HostList::get_ip_str(const std::string &host_name) const
+std::string HostList::get_ip_str(const std::string & host_name) const
 {
 	return host_map_.at(host_name);
 }
 
-bool HostList::Load(const std::string &path)
+bool HostList::Load(const std::string & path)
 {
 	std::ifstream stream(path); //创立文件输入流
 	if (stream)					//创建成功
@@ -86,7 +86,7 @@ bool HostList::Load(const std::string &path)
 			stream >> host_name;
 			//std::cout << host_ip << " " << host_name << std::endl;
 			if (stream)
-				host_map_.insert({host_name, host_ip}); //向创建的map中插入关联组<网址名,ip地址>
+				host_map_.insert({ host_name, host_ip }); //向创建的map中插入关联组<网址名,ip地址>
 		}
 		return true;
 	}
