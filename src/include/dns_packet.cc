@@ -219,7 +219,6 @@ bool DNSPacket::to_packet()
 	return true;
 }
 
-#ifndef NDEBUG
 void DNSPacket::PrintPacket()
 {
 	printf("------------------Header------------------\n");
@@ -277,4 +276,3 @@ void DNSPacket::PrintRawData()
 			printf("\n");
 	}
 }
-#endif

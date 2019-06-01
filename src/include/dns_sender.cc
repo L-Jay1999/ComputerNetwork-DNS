@@ -64,8 +64,10 @@ void DNSSender::Responce()
 		}
 		else if (state == BANNED)
 		{
+			int ptr = 0;
 			Log::WriteLog(1, __s("Sender host is banned"));
 			set_reply("0.0.0.0"); // 将dns包的answer设置0.0.0.0
+			dns_packet_.CopyToCSTR((unsigned short)0x8183, dns_packet_.raw_data, ptr);
 			send_to_client();
 		}
 		else
@@ -102,7 +104,10 @@ void DNSSender::Responce()
 					}
 				}
 				else if (resend > 1)
+				{
+					Log::WriteLog(1, __s("server no responce"));
 					return;
+				}
 				else
 					resend++;
 			}
