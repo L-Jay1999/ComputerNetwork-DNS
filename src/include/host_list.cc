@@ -5,21 +5,17 @@
 #include "host_list.h"
 #include "log.h"
 
-const std::string HostList::banned_host_ = "0.0.0.0";
+const std::string HostList::banned_host_ipv4 = "0.0.0.0";
 
-HostList::HostList(const std::string& path)
+static bool is_ipv6_zero(const std::string &str)
 {
-	if (Load(path))
-	{
-		Log::WriteLog(1, __s("host list loading succeed"));
-	}
-	else
-	{
-		Log::WriteLog(1, __s("host list loading failed"));
-	}
+	for (const auto c : str)
+		if (c != '0' && c != ':')
+			return false;
+	return true;
 }
 
-static bool is_ipv6(const std::string& str)
+static bool is_ipv6(const std::string &str)
 {
 	int p = 0;
 	for (auto c : str)
@@ -29,9 +25,15 @@ static bool is_ipv6(const std::string& str)
 		else if (c == ':')
 			return true;
 	}
-	if (p == 3)
-		return false;
-	else return true;
+	return p != 3;
+}
+
+HostList::HostList(const std::string& path)
+{
+	if (Load(path))
+		Log::WriteLog(1, __s("host list loading succeed"));
+	else
+		Log::WriteLog(1, __s("host list loading failed"));
 }
 
 HostState HostList::get_host_state(const std::string & host_name, int net_type) const
@@ -43,36 +45,18 @@ HostState HostList::get_host_state(const std::string & host_name, int net_type) 
 		{
 			if (is_ipv6((*i).second) && net_type == 1)
 			{
-				return FIND;
+				return is_ipv6_zero((*i).second) ? BANNED : FIND;
 			}
 			else if (!is_ipv6((*i).second) && net_type == 0)
 			{
-				if ((*i).second == banned_host_)
-					return BANNED;
-				else
-				{
-					return FIND;
-				}
+				return ((*i).second == banned_host_ipv4) ? BANNED : FIND;
 			}
 		}
 	}
 	return NOT_FIND;
-	/*/
-	if (iter == host_map_.end()) //到末尾，并未查询到
-		return NOT_FIND;
-	else if (iter->second == banned_host_) //查询到但域名为0.0.0.0
-		return BANNED;
-	else
-		return FIND;
-		*/
 }
 
-std::string HostList::get_ip_str(const std::string & host_name) const
-{
-	return host_map_.at(host_name);
-}
-
-bool HostList::Load(const std::string & path)
+bool HostList::Load(const std::string &path)
 {
 	std::ifstream stream(path); //创立文件输入流
 	if (stream)					//创建成功
@@ -82,9 +66,7 @@ bool HostList::Load(const std::string & path)
 		while (stream)
 		{
 			//文件每行记录以 ip地址+网址名 的方式给出
-			stream >> host_ip;
-			stream >> host_name;
-			//std::cout << host_ip << " " << host_name << std::endl;
+			stream >> host_ip >> host_name;
 			if (stream)
 				host_map_.insert({ host_name, host_ip }); //向创建的map中插入关联组<网址名,ip地址>
 		}
