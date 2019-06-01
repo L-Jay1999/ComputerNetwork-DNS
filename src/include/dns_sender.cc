@@ -52,7 +52,7 @@ void DNSSender::Responce()
 {
 	for (int query_cnt = 0; query_cnt < dns_packet_.header.QDCOUNT; query_cnt++)
 	{
-		HostState state = host_list_->get_host_state(dns_packet_.query[query_cnt].QNAME); // 查询Q.NAME在配置表中是否找到
+		HostState state = host_list_->get_host_state(dns_packet_.query[query_cnt].QNAME, dns_packet_.query[query_cnt].QTYPE == 28); // 查询Q.NAME在配置表中是否找到
 		char client_ip[24];
 		inet_ntop(AF_INET, &dns_packet_.from.sin_addr, client_ip, sizeof(client_ip)); // 将dns_packet_.from.sin_addr转换为点十进制表示法ip地址
 		Log::WriteLog(1, __s("Sender get packet querying for ") + dns_packet_.query[query_cnt].QNAME + __s(" from ") + __s(client_ip));
