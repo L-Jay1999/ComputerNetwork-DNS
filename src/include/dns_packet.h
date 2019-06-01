@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <memory>
 #include <utility>
+#include <cassert>
 
 #include <WinSock2.h>
 #pragma comment(lib, "Ws2_32.lib")
@@ -38,9 +39,24 @@ struct DNSAnswer
 struct QueueData
 {
 	int len;
-	char data[1024];
+	char data[524];
 	sockaddr_in addr;
 };
+
+// 将val的内容以ptr为位置指针写入buffer
+template <typename T>
+extern void CopyToCSTR(const T val, char *buffer, int &ptr);
+
+void CopyToCSTR(const std::string &str, char *buffer, int &ptr);
+
+// 将src的内容以ptr为位置指针读入dest
+template <typename T>
+extern void ReadFromCSTR(T &dest, const char *src, int &ptr);
+
+// 将src的内容以ptr为位置指针读取之后len位的内容存入dest
+void ReadFromCSTR(char *dest, const unsigned len, const char *src, int &ptr);
+
+void ReadFromCSTR(std::string &dest, const unsigned len, const char *src, int &ptr);
 
 struct DNSPacket
 {
@@ -66,18 +82,4 @@ struct DNSPacket
 	DNSHeader header{};					 //报文的头部
 	std::unique_ptr<DNSQuery[]> query;   //报文的询问部分
 	std::unique_ptr<DNSAnswer[]> answer; //报文的回答部分
-
-	void CopyToCSTR(const std::string &str, char *buffer, int &ptr);
-
-	// 将val的内容以ptr为位置指针写入buffer
-	template <typename T>
-	void CopyToCSTR(const T val, char *buffer, int &ptr);
-
-	// 将src的内容以ptr为位置指针读入dest
-	template <typename T>
-	static void ReadFromCSTR(T &dest, const char *src, int &ptr);
-
-	// 将src的内容以ptr为位置指针读取之后len位的内容存入dest
-	void ReadFromCSTR(char *dest, const unsigned len, const char *src, int &ptr);
-	void ReadFromCSTR(std::string &dest, const unsigned len, const char *src, int &ptr);
 };

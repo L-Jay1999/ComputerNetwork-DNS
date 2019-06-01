@@ -1,5 +1,4 @@
 #pragma once
-
 #include <unordered_map>
 #include <string>
 
@@ -20,11 +19,12 @@ public:
 	HostState get_host_state(const std::string &host_name, int net_type) const;
 
 	//根据传入的host_name在map中寻找其所在的组并返回其ip地址
-	std::string get_ip_str(const std::string &host_name) const;
+	std::string get_ip_str(const std::string &host_name) const { return host_map_.at(host_name); }
 
 private:
+	static const std::string banned_host_ipv4;					//被拦截字符串
+	static const std::string banned_host_ipv6;
 	bool Load(const std::string &path);
 	std::string host_path_;									//文件所在路径
-	static const std::string banned_host_;					//被拦截字符串
 	std::unordered_map<std::string, std::string> host_map_; // <host_name, ip_addr>
 };

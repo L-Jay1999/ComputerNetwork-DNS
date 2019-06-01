@@ -11,7 +11,6 @@
 void JobQueue::Push(const QueueData &packet)
 {
 	std::lock_guard<std::mutex> lock(push_mtx_);
-	std::random_device rd;
 
 	int upper_bound = pos_;
 	if (upper_bound)

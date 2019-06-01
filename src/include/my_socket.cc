@@ -12,8 +12,6 @@
 static const char *kDefaultDNSPort = "53";
 static const std::string kSuperiorDNSServerAddr = "10.3.9.4";
 
-static int get_send_port_random();
-
 MySocket::MySocket(SocketType sock_type) : sock_type_(sock_type)
 {
 	if (InitSock(sock_type_, kDefaultDNSPort, kSuperiorDNSServerAddr) == ERROR_SUCCESS)
@@ -33,7 +31,7 @@ MySocket::MySocket(SocketType sock_type, const char *port, const std::string &su
 	if (InitSock(sock_type_, port, superior_dns) == ERROR_SUCCESS)
 	{
 		init_success_ = true;
-		Log::WriteLog(2, __s("MySocket InitSocket success, Port: ") + port + __s(" su_dns addr: ") + superior_dns);
+		Log::WriteLog(2, __s("MySocket InitSocket success, Port: ") + port + __s(" superior_dns addr: ") + superior_dns);
 	}
 	else
 	{
@@ -53,25 +51,21 @@ MySocket::~MySocket()
 			Log::WriteLog(2, __s("MySocket ~ close socket failed, ErrorCode: ") + std::to_string(last_error_));
 		}
 	}
-	if (WSACleanup())
-	{
-		last_error_ = WSAGetLastError();
-		Log::WriteLog(2, __s("MySocket ~ WSACleanup failed, ErrorCode: ") + std::to_string(last_error_));
-	}
+	WSACleanup();
 }
 
 DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::string &superior_dns)
 {
 	WSADATA wsaData;
 
-	last_error_ = WSAStartup(MAKEWORD(2, 2), &wsaData); //连接应用程序与winsock
-	if (last_error_)									//初始化失败，输出错误信息并退出
+	last_error_ = WSAStartup(MAKEWORD(2, 2), &wsaData); // 连接应用程序与winsock
+	if (last_error_)									// 初始化失败，输出错误信息并退出
 	{
 		Log::WriteLog(2, __s("MySocket InitSock WSAStartup failed, ErrorCode: ") + std::to_string(last_error_));
 		return last_error_;
 	}
 
-	//建立并配置addrinfo结构用于getaddrinfo函数
+	// 建立并配置addrinfo结构用于getaddrinfo函数
 	addrinfo hint, *result = nullptr;
 
 	ZeroMemory(&hint, sizeof(hint));
@@ -89,14 +83,14 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 		last_error_ = getaddrinfo("localhost", port, &hint, &result);
 	}
 
-	if (last_error_) //result指针操作失败时，返回错误信息
+	if (last_error_) // result指针操作失败时，返回错误信息
 	{
 		Log::WriteLog(2, __s("MySocket InitSock getaddrinfo failed, ErrorCode: ") + std::to_string(last_error_));
 		WSACleanup();
 		return last_error_;
 	}
 
-	sock_ = socket(result->ai_family, result->ai_socktype, result->ai_protocol); //建立一个监听客户端连接的socket
+	sock_ = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 	if (sock_ == INVALID_SOCKET)
 	{
 		last_error_ = WSAGetLastError();
@@ -106,9 +100,9 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 		return last_error_;
 	}
 
-	DWORD is_reuseaddr = FALSE;
 	//防止其他socket被强制绑定到相同的地址和端口
-	if (setsockopt(sock_, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, reinterpret_cast<const char *>(&is_reuseaddr), sizeof(is_reuseaddr) == SOCKET_ERROR))
+	DWORD is_exclusive_addr_use = FALSE;
+	if (setsockopt(sock_, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, reinterpret_cast<const char *>(&is_exclusive_addr_use), sizeof(is_exclusive_addr_use) == SOCKET_ERROR))
 	{
 		last_error_ = WSAGetLastError();
 		Log::WriteLog(2, __s("MySocket InitSock set SO_EXCLUSIVEADDRUSE to false failed, ErrorCode: ") + std::to_string(last_error_));
@@ -119,7 +113,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 	}
 
 	//允许将socket绑定到已在使用的地址
-	is_reuseaddr = TRUE;
+	DWORD is_reuseaddr = TRUE;
 	if (setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&is_reuseaddr), sizeof(is_reuseaddr) == SOCKET_ERROR))
 	{
 		last_error_ = WSAGetLastError();
@@ -141,8 +135,8 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 		return last_error_;
 	}
 
-	my_addr_info_size_ = sizeof(my_addr_info_);
 	//检索sock_的本地名称，确定与本地关联
+	my_addr_info_size_ = sizeof(my_addr_info_);
 	last_error_ = getsockname(sock_, reinterpret_cast<sockaddr *>(&my_addr_info_), &my_addr_info_size_);
 	if (last_error_)
 	{
@@ -158,19 +152,8 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 	}
 	else
 	{
-		max_msg_size_len_ = sizeof(max_msg_size_);
-		//检索socket当前值是否超过最大信息大小
-		last_error_ = getsockopt(sock_, SOL_SOCKET, SO_MAX_MSG_SIZE, reinterpret_cast<char *>(&max_msg_size_), reinterpret_cast<int *>(&max_msg_size_len_));
-		if (last_error_ == SOCKET_ERROR)
-		{
-			Log::WriteLog(2, __s("MySocket InitSock get max msg size failed, ErrorCode: ") + std::to_string(last_error_));
-			freeaddrinfo(result);
-			WSACleanup();
-			return last_error_;
-		}
-
 		freeaddrinfo(result);
-		last_error_ = getaddrinfo(superior_dns.c_str(), kDefaultDNSPort, &hint, &result); //提供从主机名到地址的独立于协议的转换,将result修改为addrinfo结构的链接列表
+		last_error_ = getaddrinfo(superior_dns.c_str(), kDefaultDNSPort, &hint, &result);
 		if (last_error_)
 		{
 			Log::WriteLog(2, __s("MySocket InitSock get superior addr info failed, ErrorCode: ") + std::to_string(last_error_));
@@ -188,7 +171,7 @@ DWORD MySocket::InitSock(SocketType soc_type, const char *port, const std::strin
 
 DWORD MySocket::_RecvFrom(QueueData &queue_data)
 {
-	while (1)
+	while (true)
 	{
 		recv_len_ = recvfrom(sock_, recvbuf_, recvbuflen_, 0, reinterpret_cast<sockaddr *>(&from_), &from_len_); //接收上级返回的数据报并将数据存入recvbuf_，将原地址存入from_
 		if (recv_len_ == 0)																						 //连接正常关闭
@@ -196,17 +179,17 @@ DWORD MySocket::_RecvFrom(QueueData &queue_data)
 			Log::WriteLog(2, __s("MySocket recvfrom connectiong is closed gracefully"));
 			continue;
 		}
-		else if (recv_len_ < 0) //连接出错
+		else if (recv_len_ < 0)
 		{
 			last_error_ = WSAGetLastError();
-			if (last_error_ == WSAETIMEDOUT) //因为超时而出错
+			if (last_error_ == WSAETIMEDOUT) // 超时
 			{
 				Log::WriteLog(2, __s("MySocket recvfrom failed: timeout"));
 				return WSAETIMEDOUT;
 			}
-			else if (last_error_ == WSAECONNRESET) //当前socket不可用
+			else if (last_error_ == WSAECONNRESET) // 不可达, 对方端口已关闭
 			{
-				Log::WriteLog(2, __s("MySocket recvfrom failed: previous send destination unreachable, use public socket instead of local socket"));
+				Log::WriteLog(2, __s("MySocket recvfrom failed: previous send destination unreachable"));
 				// continue;
 			}
 			else
@@ -249,12 +232,7 @@ QueueData MySocket::RecvFrom()
 	{
 		QueueData res = QueueData();
 		last_error_ = _RecvFrom(res);
-		if (last_error_ != ERROR_SUCCESS)
-		{
-			res = QueueData();
-		}
-
-		return res;
+		return last_error_ == ERROR_SUCCESS ? res : QueueData();
 	}
 	else
 	{
@@ -268,13 +246,7 @@ bool MySocket::SendTo(const QueueData &queue_data)
 	if (sock_type_ == SEND_SOCKET || sock_type_ == QUEST_SOCKET)
 	{
 		last_error_ = _SendTo(queue_data);
-
-		if (last_error_ != ERROR_SUCCESS)
-		{
-			return false;
-		}
-
-		return true;
+		return last_error_ == ERROR_SUCCESS ? true : false;
 	}
 	else
 	{
@@ -285,22 +257,15 @@ bool MySocket::SendTo(const QueueData &queue_data)
 
 bool MySocket::set_recv_timeout(const int ms)
 {
-	if (sock_type_ == QUEST_SOCKET)
-	{
-		const DWORD time_out = ms;
+	const DWORD time_out = ms;
 
-		last_error_ = setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&time_out), sizeof(time_out)); //设置超时时间
-		if (last_error_ == SOCKET_ERROR)
-		{
-			last_error_ = WSAGetLastError();
-			Log::WriteLog(2, __s("MySocket set recv timeout failed: ErrorCode:") + std::to_string(last_error_));
-			return false;
-		}
-		else
-		{
-			return true;
-		}
+	last_error_ = setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char *>(&time_out), sizeof(time_out)); //设置超时时间
+	if (last_error_ == SOCKET_ERROR)
+	{
+		last_error_ = WSAGetLastError();
+		Log::WriteLog(2, __s("MySocket set recv timeout failed: ErrorCode:") + std::to_string(last_error_));
+		return false;
 	}
 	else
-		return false;
+		return true;
 }

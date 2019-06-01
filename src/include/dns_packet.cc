@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <iostream>
 #include <cstdio>
@@ -11,25 +12,21 @@
 
 // 将val的内容以ptr为位置指针写入buffer
 template <typename T>
-void DNSPacket::CopyToCSTR(const T val, char *buffer, int &ptr)
+void CopyToCSTR(const T val, char *buffer, int &ptr)
 {
 	assert(buffer != nullptr);
-	char temp_LE[12]; // 小端序
+	char temp_LE[12]{}; // 小端序
 	const char *p_char = reinterpret_cast<const char *>(&val);
 
 	for (int i = sizeof(T) - 1; i >= 0; i--)
-	{
-		temp_LE[i] = *p_char;
-		p_char++;
-	}
+		temp_LE[i] = *p_char++;
 
 	T *p_HE = reinterpret_cast<T *>(buffer + ptr); // 大端序
-	T *p_LE = reinterpret_cast<T *>(temp_LE);
-	*p_HE = *p_LE;
+	*p_HE = *reinterpret_cast<T *>(temp_LE);
 	ptr += sizeof(T);
 }
 
-void DNSPacket::CopyToCSTR(const std::string &str, char *buffer, int &ptr)
+void CopyToCSTR(const std::string &str, char *buffer, int &ptr)
 {
 	assert(buffer != nullptr);
 	for (const auto c : str)
@@ -38,17 +35,14 @@ void DNSPacket::CopyToCSTR(const std::string &str, char *buffer, int &ptr)
 
 // 将src的内容以ptr为位置指针读入dest
 template <typename T>
-void DNSPacket::ReadFromCSTR(T &dest, const char *src, int &ptr)
+void ReadFromCSTR(T &dest, const char *src, int &ptr)
 {
 	assert(src != nullptr);
 	char temp_HE[12];
 	const char *p_char = src + ptr;
 
 	for (int i = sizeof(T) - 1; i >= 0; i--)
-	{
-		temp_HE[i] = *p_char;
-		p_char++;
-	}
+		temp_HE[i] = *p_char++;
 
 	T *p_HE = reinterpret_cast<T *>(temp_HE);
 	dest = *p_HE;
@@ -56,14 +50,14 @@ void DNSPacket::ReadFromCSTR(T &dest, const char *src, int &ptr)
 }
 
 // 将src的内容以ptr为位置指针读取之后len位的内容存入dest
-void DNSPacket::ReadFromCSTR(char *dest, const unsigned len, const char *src, int &ptr)
+void ReadFromCSTR(char *dest, const unsigned len, const char *src, int &ptr)
 {
 	assert(src != nullptr);
 	for (unsigned i = 0; i < len; i++)
 		ReadFromCSTR(dest[i], src, ptr);
 }
 
-void DNSPacket::ReadFromCSTR(std::string &dest, const unsigned len, const char *src, int &ptr)
+void ReadFromCSTR(std::string &dest, const unsigned len, const char *src, int &ptr)
 {
 	assert(src != nullptr);
 	for (unsigned i = 0; i < len; i++)
@@ -78,6 +72,7 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 	int ptr = 0;
 
 	from = raw_packet.addr;
+	// header
 	ReadFromCSTR(header.ID, packet, ptr);
 	ReadFromCSTR(header.Flags, packet, ptr);
 	ReadFromCSTR(header.QDCOUNT, packet, ptr);
@@ -110,7 +105,7 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 		answer = std::make_unique<DNSAnswer[]>(header.ANCOUNT);
 		for (int answer_cnt = 0; answer_cnt < header.ANCOUNT; answer_cnt++)
 		{
-			if (static_cast<unsigned char>(packet[ptr]) == 0xc0) // ptr指向0xc0时，ptr接下来一位会指向QNAME首位的地址，据此进行读取
+			if (static_cast<unsigned char>(packet[ptr]) >> 4 == 0x0c) // ptr指向0xc0时，ptr接下来会指向QNAME首位的地址，据此进行读取
 			{
 				const int ptr_temp = ptr;
 				ptr = static_cast<int>(packet[ptr + 1]);
@@ -128,6 +123,7 @@ bool DNSPacket::Parse(const QueueData &raw_packet)
 			}
 			else
 			{
+				// without dns compression
 				std::cout << "warning" << std::endl;
 			}
 			ReadFromCSTR(answer[answer_cnt].TYPE, packet, ptr);
@@ -146,7 +142,7 @@ bool DNSPacket::to_packet()
 	int ptr = 0;
 
 	// 头
-	const int isans = header.Flags >> 15;
+	const unsigned short isans = header.Flags >> 15;
 
 	CopyToCSTR(header.ID, data, ptr);
 	CopyToCSTR(header.Flags, data, ptr);
@@ -155,7 +151,7 @@ bool DNSPacket::to_packet()
 	CopyToCSTR(header.NSCOUNT, data, ptr);
 	CopyToCSTR(header.ARCOUNT, data, ptr);
 
-	// 问题
+	// 请求
 	unsigned short QTYPE;
 	unsigned short QCLASS;
 	for (int query_cnt = 0; query_cnt < header.QDCOUNT; query_cnt++)
@@ -201,8 +197,7 @@ bool DNSPacket::to_packet()
 			RDLENGTH = answer[acnt].RDLENGTH;
 
 			// NAME (PTR)
-			CopyToCSTR(static_cast<unsigned char>(0xc0), data, ptr);
-			CopyToCSTR(static_cast<unsigned char>(0x0c), data, ptr);
+			CopyToCSTR(static_cast<unsigned short>(0x0cc0), data, ptr); // to big endding : 0x c0 0c
 
 			// RR
 			CopyToCSTR(TYPE, data, ptr);

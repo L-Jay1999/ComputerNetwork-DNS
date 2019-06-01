@@ -2,6 +2,7 @@
 #include <memory>
 #include <utility>
 #include <random>
+#include <atomic>
 #include <iostream>
 
 #include "my_queue.h"
@@ -10,19 +11,14 @@
 #include "dns_sender.h"
 #include "log.h"
 
-static int get_quest_port_random()
+static inline int get_quest_port()
 {
-	static constexpr int kSendPortLowerBound = 10000;
-	static constexpr int kSendPortUpperBound = 50000;
-
-	static std::random_device rd;
-	static std::uniform_int_distribution<int> uid(kSendPortLowerBound, kSendPortUpperBound);
-
-	return uid(rd);
+	static std::atomic<int> temp = 10000;
+	return temp++;
 }
 
 DNSSender::DNSSender(JobQueue *job_queue, HostList *host_list, const std::string &address)
-	: job_queue_(job_queue), host_list_(host_list), address_(address), sockSend_(SEND_SOCKET, "53", address), sockQuest_(QUEST_SOCKET, std::to_string(get_quest_port_random()).c_str(), "")
+	: job_queue_(job_queue), host_list_(host_list), address_(address), sockSend_(SEND_SOCKET, "53", address), sockQuest_(QUEST_SOCKET, std::to_string(get_quest_port()).c_str(), "")
 {
 	job_queue_->Bind(this);
 	sockQuest_.set_recv_timeout(1000);
@@ -43,42 +39,35 @@ void DNSSender::set_packet()
 	dns_packet_.Parse(temp_qdata);
 }
 
-void DNSSender::set_queue(MyQueue *data_queue) noexcept
-{
-	data_queue_ = data_queue;
-}
-
 void DNSSender::Responce()
 {
 	for (int query_cnt = 0; query_cnt < dns_packet_.header.QDCOUNT; query_cnt++)
 	{
 		HostState state = host_list_->get_host_state(dns_packet_.query[query_cnt].QNAME, dns_packet_.query[query_cnt].QTYPE == 28); // 查询Q.NAME在配置表中是否找到
+
 		char client_ip[24];
 		inet_ntop(AF_INET, &dns_packet_.from.sin_addr, client_ip, sizeof(client_ip)); // 将dns_packet_.from.sin_addr转换为点十进制表示法ip地址
+
 		Log::WriteLog(1, __s("Sender get packet querying for ") + dns_packet_.query[query_cnt].QNAME + __s(" from ") + __s(client_ip));
 		if (state == FIND)
 		{
 			Log::WriteLog(1, __s("Sender find ip address: ") + host_list_->get_ip_str(dns_packet_.query[query_cnt].QNAME) + __s(" for host: ") + dns_packet_.query[query_cnt].QNAME);
-			set_reply(host_list_->get_ip_str(dns_packet_.query[query_cnt].QNAME)); // 将dns包的answer设置为查询到的ip地址
-			send_to_client();
+			set_reply_normal(host_list_->get_ip_str(dns_packet_.query[query_cnt].QNAME)); // 将dns包的answer设置为查询到的ip地址
+			send_to_client(dns_packet_.raw_data.addr);
 		}
 		else if (state == BANNED)
 		{
-			int ptr = 2;
 			Log::WriteLog(1, __s("Sender host is banned"));
-			set_reply("0.0.0.0"); // 将dns包的answer设置0.0.0.0
-			dns_packet_.CopyToCSTR((unsigned short)0x8183, dns_packet_.raw_data.data, ptr);
-			send_to_client();
+			set_reply_banned();
+			send_to_client(dns_packet_.raw_data.addr);
 		}
 		else
 		{
 			Log::WriteLog(1, __s("Sender cannot find host, query ip address from ") + address_);
 			sockaddr_in temp = dns_packet_.raw_data.addr;
 
-			int resend = 0;
-			int ptr = 0;
-			auto id_expected = dns_packet_.header.ID;
-			decltype(id_expected) id_recv;
+			int resend = 0, ptr = 0;
+			unsigned short id_expected = dns_packet_.header.ID, id_recv;
 			DNSPacket temp_dns_packet;
 			QueueData temp_packet;
 
@@ -91,7 +80,7 @@ void DNSSender::Responce()
 				temp_packet = sockQuest_.RecvFrom();
 				if (temp_packet.len)
 				{
-					temp_dns_packet.ReadFromCSTR(id_recv, temp_packet.data, ptr);
+					ReadFromCSTR(id_recv, temp_packet.data, ptr);
 					if (id_recv == id_expected)
 					{
 						break;
@@ -100,7 +89,6 @@ void DNSSender::Responce()
 					{
 						ptr = 0;
 						Log::WriteLog(2, __s("Sender recv answer with wrong id"));
-						continue;
 					}
 				}
 				else if (resend > 1)
@@ -111,7 +99,9 @@ void DNSSender::Responce()
 				else
 					resend++;
 			}
+
 			temp_packet.addr = temp;
+
 			if (!sockSend_.SendTo(temp_packet)) // 将收到的上级应答数据包再传回用户
 				Log::WriteLog(2, __s("Sender send to client failed, ErrorCode: ") + std::to_string(WSAGetLastError()));
 			else
@@ -120,7 +110,7 @@ void DNSSender::Responce()
 	}
 }
 
-void DNSSender::set_reply(const std::string &ip)
+void DNSSender::set_reply_normal(const std::string &ip)
 {
 	dns_packet_.header.Flags = 0x8180;
 	dns_packet_.header.ANCOUNT = 1;
@@ -144,13 +134,13 @@ void DNSSender::set_reply(const std::string &ip)
 			temp.push_back(ip[i]);
 	}
 	dns_packet_.answer[0].RDATA.push_back(static_cast<unsigned char>(std::stoi(temp)));
-	temp.clear();
 	dns_packet_.to_packet(); // 生成dns_packet_.raw_data
 }
 
-void DNSSender::send_to_client()
+void DNSSender::set_reply_banned()
 {
-	sockSend_.SendTo(dns_packet_.raw_data); // 在socket上写入传出数据raw_data
+	dns_packet_.header.Flags = 0x8183;
+	dns_packet_.to_packet();
 }
 
 void DNSSender::send_to_client(const sockaddr_in &addr)

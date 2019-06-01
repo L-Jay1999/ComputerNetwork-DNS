@@ -1,5 +1,5 @@
-#include <thread>
 #include <io.h>
+#include <thread>
 #include <cctype>
 
 #include "include/dns_packet.h"
@@ -26,64 +26,59 @@ void sender_t(JobQueue *job_queue, HostList *host_list, const std::string &addre
 	sender.Start();
 }
 
+void print_help_msg(const char *exe_path)
+{
+	std::cout << "Usage: " << exe_path << " [superior dns ip address] [-d/-dd] [host rule file]\n"
+			  << "Option:\n"
+			  << "superior dns ip address: set the superior dns ip addrss, default: 10.3.9.4.\n"
+			  << "-d/-dd: set debug level(-d = 1, -dd = 2), default debug level(no debug info): 0.\n"
+			  << "host rule file: use rules provided in the host rule file instead of default rules.\n";
+}
+
 void checkparameters(const int argc, const char *argv[], std::string &host_path, std::string &superior_server_addr)
 {
 	bool debug_flag = true;
 	bool path_flag = true;
 	bool ip_flag = true;
-	if (argc != 1) //argc==1时说明命令行输入只有程序运行全路径名，不作处理，不等于1时如下
+	if (argc > 1 && argc < 5) //argc == 1时说明命令行输入只有程序运行全路径名，不作处理，不等于1时如下
 	{
 		for (int i = 1; i < argc; i++)
 		{
-			std::string parameter(argv[i]); //argv[i]指向输入命令行的字符串（从第一串起）
-			if (parameter == "-d")			//当为-d时
+			std::string parameter(argv[i]);		 //argv[i]指向输入命令行的字符串（从第一串起）
+			if (parameter == "-d" && debug_flag) //当为-d时
 			{
-				//std::cout << parameter << std::endl;
-				if (debug_flag)
-				{
-					Log::InitLog(1);
-					debug_flag = false;
-				}
+				Log::InitLog(1);
+				debug_flag = false;
 			}
-			else if (parameter == "-dd") //当为-dd时
+			else if (parameter == "-dd" && debug_flag) //当为-dd时
 			{
-				//std::cout << parameter << std::endl;
-				if (debug_flag)
-				{
-					Log::InitLog(2);
-					debug_flag = false;
-				}
+				Log::InitLog(2);
+				debug_flag = false;
 			}
 			else
 			{
-				if (_access(parameter.c_str(), 0) != -1) // 当前输入为文件名
+				if (_access(parameter.c_str(), 0) != -1 && path_flag) // 判断文件是否存在
 				{
-					//std::cout << parameter << std::endl;
-					if (path_flag)
-					{
-						host_path = parameter; // 修改配置文件名
-						path_flag = false;
-					}
+					host_path = parameter; // 修改配置文件名
+					path_flag = false;
 				}
 				else //当前输入字符串为域名
 				{
 					char buffer[8];
 					auto ip_test = inet_pton(AF_INET, parameter.c_str(), buffer); // 将域名转化为地址结构体并存于buffer
-					if (ip_test == 1)											  // 转化成功
+					if (ip_test == 1 && ip_flag)								  // 转化成功
 					{
-						//std::cout << parameter << std::endl;
-						if (ip_flag)
-						{
-							superior_server_addr = parameter; // 修改使用的服务器名
-							ip_flag = false;
-						}
+						superior_server_addr = parameter; // 修改使用的服务器名
+						ip_flag = false;
 					}
 					else
-						std::cout << "error:" << parameter << std::endl;
+						std::cerr << "error:" << parameter << std::endl;
 				}
 			}
 		}
 	}
+	else
+		print_help_msg(argv[0]);
 }
 
 int main(const int argc, const char *argv[])
@@ -109,14 +104,10 @@ int main(const int argc, const char *argv[])
 	constexpr int sender_num = 8;
 	std::vector<std::thread> sender_vec;
 	for (int i = 0; i < sender_num; i++)
-	{
 		sender_vec.push_back(std::thread(sender_t, &job_queue, &host_list, superior_server_addr));
-	}
 
 	for (auto &t : sender_vec)
-	{
 		t.join();
-	}
 
 	r.join();
 	Log::CloseLog();

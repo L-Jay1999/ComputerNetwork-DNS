@@ -5,6 +5,7 @@
 #include "my_socket.h"
 
 class JobQueue;
+
 class DNSReceiver // 接收DNS数据包并将其放到工作队列上
 {
 public:
