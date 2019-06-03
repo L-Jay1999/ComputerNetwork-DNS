@@ -197,7 +197,7 @@ bool DNSPacket::to_packet()
 			RDLENGTH = answer[acnt].RDLENGTH;
 
 			// NAME (PTR)
-			CopyToCSTR(static_cast<unsigned short>(0x0cc0), data, ptr); // to big endding : 0x c0 0c
+			CopyToCSTR(static_cast<unsigned short>(0xc00c), data, ptr); // to big endding : 0x c0 0c
 
 			// RR
 			CopyToCSTR(TYPE, data, ptr);

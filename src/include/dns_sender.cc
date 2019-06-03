@@ -134,6 +134,7 @@ void DNSSender::set_reply_normal(const std::string &ip)
 			temp.push_back(ip[i]);
 	}
 	dns_packet_.answer[0].RDATA.push_back(static_cast<unsigned char>(std::stoi(temp)));
+	dns_packet_.PrintPacket();
 	dns_packet_.to_packet(); // 生成dns_packet_.raw_data
 }
 
